@@ -1,0 +1,23 @@
+{
+  "name": "@sentinel/recorder-service",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -b tsconfig.json"
+  },
+  "dependencies": {
+    "@sentinel/market-data-source": "*",
+    "@sentinel/shared-types": "*",
+    "@sentinel/txline-client": "*",
+    "axios": "^1.7.0",
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.0",
+    "typescript": "^5.6.0"
+  }
+}

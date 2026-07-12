@@ -1,0 +1,11 @@
+-- Distinguishes a fixture whose data was captured live, tick-by-tick, as it
+-- happened (agent-runtime's upsertLiveFixture, see packages/agent-runtime/src/loop.ts)
+-- from one reconstructed after the fact via REST backfill (recorder-service/backfill.ts).
+-- Both produce equally real, on-chain-verifiable commit/reveal proofs — the
+-- distinction only matters for how the dashboard should caption displayed
+-- timestamps: a backfilled fixture's detected_at/committed_at reflect when
+-- WE processed the replay, not the original match time, since Solana only
+-- knows about the transaction that actually happened (see conversation
+-- 2026-07-12 — never rewrite timestamps to "look" live, that would silently
+-- contradict what Solscan shows for the same signature).
+ALTER TABLE tracked_fixtures ADD COLUMN captured_live BOOLEAN NOT NULL DEFAULT true;

@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "composite": false,
+    "noEmit": true
+  },
+  "include": ["src"],
+  "references": [
+    { "path": "../../packages/shared-types" },
+    { "path": "../../packages/txline-client" },
+    { "path": "../../packages/market-data-source" },
+    { "path": "../../packages/commit-reveal" },
+    { "path": "../../packages/agent-runtime" }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@sentinel/agent-conservative",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "dev": "tsx watch src/index.ts",
+    "typecheck": "tsc -b tsconfig.json"
+  },
+  "dependencies": {
+    "@sentinel/agent-runtime": "*",
+    "@sentinel/commit-reveal": "*",
+    "@sentinel/market-data-source": "*",
+    "@sentinel/shared-types": "*",
+    "@sentinel/txline-client": "*",
+    "@solana/web3.js": "^1.95.0",
+    "pg": "^8.13.0",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

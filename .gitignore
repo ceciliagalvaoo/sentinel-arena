@@ -1,0 +1,48 @@
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+coverage/
+.turbo/
+.cache/
+.vercel/
+
+# Secrets - wallet keypairs and API sessions must never be versioned.
+secrets/
+*-wallet.json
+*-session.json
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Env files - only .env.example templates are versioned.
+.env
+.env.*
+!.env.example
+!apps/*/.env.example
+
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Next.js
+apps/dashboard/.next/
+apps/dashboard/out/
+.next/
+out/
+
+# Database/runtime artifacts
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.backup
+
+# Recorded replay data can get large; keep it out of git by default.
+db/replays/*.jsonl

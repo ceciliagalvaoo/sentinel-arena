@@ -1,0 +1,20 @@
+{
+  "name": "@sentinel/commit-reveal",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -b tsconfig.json"
+  },
+  "dependencies": {
+    "@sentinel/shared-types": "*",
+    "@solana/web3.js": "^1.95.0",
+    "bs58": "^6.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}
