@@ -1,0 +1,30 @@
+# Standalone compose file for running ONLY the two agents on a separate
+# host (the Google Cloud e2-micro free-tier VM -- see DEPLOYMENT.md) while
+# backend-api + dashboard live on Render and Postgres lives on Supabase.
+#
+# Unlike docker-compose.yml (local dev), there is no `postgres` service and
+# no DATABASE_URL override here -- each agent's own .env (env_file below)
+# must already point DATABASE_URL at Supabase directly, since there's no
+# local Postgres container to talk to on this host.
+#
+# Usage on the VM:
+#   docker compose -f docker-compose.agents.yml up -d --build
+
+services:
+  agent-aggressive:
+    build:
+      context: .
+      dockerfile: apps/agent-aggressive/Dockerfile
+    env_file: ./apps/agent-aggressive/.env
+    restart: unless-stopped
+    volumes:
+      - ./secrets:/app/secrets:ro
+
+  agent-conservative:
+    build:
+      context: .
+      dockerfile: apps/agent-conservative/Dockerfile
+    env_file: ./apps/agent-conservative/.env
+    restart: unless-stopped
+    volumes:
+      - ./secrets:/app/secrets:ro

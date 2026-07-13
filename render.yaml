@@ -1,33 +1,37 @@
 # Render Blueprint for Sentinel Arena.
 #
-# Deploys backend-api + both agents + the dashboard as four separate
-# services from this one repo, each building its own Dockerfile
-# (apps/*/Dockerfile) with the repo root as build context -- same pattern
-# already used by docker-compose.yml locally.
+# Deploys backend-api + the dashboard as two services from this repo, each
+# building its own Dockerfile (apps/*/Dockerfile) with the repo root as
+# build context -- same pattern already used by docker-compose.yml locally.
 #
-# Database is intentionally NOT defined here: Postgres lives on Supabase,
-# not on Render (see project decision -- Render's free Postgres tier expires
-# around 30 days, too short for the hackathon judging window). Every service
-# below takes DATABASE_URL as a manually-entered secret (sync: false) instead.
+# The two agents (agent-aggressive, agent-conservative) are deliberately
+# NOT here: Render has no free tier for Background Workers (only paid
+# Starter+), and they need to run 24/7 without sleeping (Autonomous
+# Operation is a hard judging criterion). They run instead on a free-tier
+# Google Cloud e2-micro VM via docker-compose.agents.yml -- see
+# DEPLOYMENT.md.
 #
-# Field names/values here are a best-effort blueprint prepared ahead of time;
-# validate them against Render's current dashboard when actually syncing --
-# some values (plan tier, exact secret-file mount path) are only knowable
-# once the services exist.
+# Database is also NOT defined here: Postgres lives on Supabase, not on
+# Render (Render's free Postgres tier expires around 30 days, too short for
+# the hackathon judging window). Both services below take DATABASE_URL as a
+# manually-entered secret (sync: false) instead.
+#
+# Field names/values here are a best-effort blueprint prepared ahead of
+# time; validate them against Render's current dashboard when actually
+# syncing.
 #
 # --- Before syncing this blueprint ---
 # 1. Run db/migrations against the Supabase database (scripts/migrate.ts,
 #    DATABASE_URL pointed at Supabase) -- Render does not run migrations
-#    automatically.
-# 2. Have ready, to upload as Render "Secret Files" on the two agent
-#    services: secrets/agent-aggressive-wallet.json,
-#    secrets/agent-aggressive-session.json, and the -conservative
-#    equivalents. These are gitignored on purpose and are NOT in this repo's
-#    git history -- they only exist locally right now.
-# 3. Know backend-api's public Render URL before setting dashboard's
+#    automatically. (Already done as of 2026-07-12.)
+# 2. Know backend-api's public Render URL before setting dashboard's
 #    NEXT_PUBLIC_API_URL -- it's baked into the dashboard's static JS bundle
 #    at Docker build time (see apps/dashboard/Dockerfile), so backend-api
 #    must be deployed first, and the dashboard rebuilt if that URL changes.
+# 3. Render's free web services spin down after 15 min of no traffic and
+#    cold-start on the next request -- fine for a judge occasionally
+#    opening the dashboard, just expect the first load after idle time to
+#    take a few extra seconds.
 
 services:
   - type: web
@@ -35,7 +39,7 @@ services:
     runtime: docker
     dockerfilePath: ./apps/backend-api/Dockerfile
     dockerContext: .
-    plan: starter
+    plan: free
     healthCheckPath: /health
     envVars:
       - key: PORT
@@ -45,74 +49,14 @@ services:
       - key: SOLANA_RPC_URL
         value: https://api.devnet.solana.com
       - key: DATABASE_URL
-        sync: false # Supabase connection string, must include ?sslmode=require or similar
-
-  - type: worker
-    name: sentinel-agent-aggressive
-    runtime: docker
-    dockerfilePath: ./apps/agent-aggressive/Dockerfile
-    dockerContext: .
-    plan: starter
-    envVars:
-      - key: NETWORK
-        value: devnet
-      - key: SOLANA_RPC_URL
-        value: https://api.devnet.solana.com
-      - key: TXLINE_API_ORIGIN
-        value: https://txline-dev.txodds.com
-      - key: TXLINE_PROGRAM_ID
-        value: 6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J
-      - key: AGENT_ID
-        value: agent-aggressive
-      - key: SENSITIVITY_MULTIPLIER
-        value: "1.5"
-      - key: WINDOW_SECONDS
-        value: "60"
-      - key: WARMUP_READINGS
-        value: "30"
-      - key: WALLET_KEYPAIR_PATH
-        value: /etc/secrets/agent-aggressive-wallet.json # upload as a Render Secret File
-      - key: SESSION_PATH
-        value: /etc/secrets/agent-aggressive-session.json # upload as a Render Secret File (optional -- degrades gracefully if absent, see apps/agent-aggressive/src/index.ts loadSession)
-      - key: DATABASE_URL
-        sync: false
-
-  - type: worker
-    name: sentinel-agent-conservative
-    runtime: docker
-    dockerfilePath: ./apps/agent-conservative/Dockerfile
-    dockerContext: .
-    plan: starter
-    envVars:
-      - key: NETWORK
-        value: devnet
-      - key: SOLANA_RPC_URL
-        value: https://api.devnet.solana.com
-      - key: TXLINE_API_ORIGIN
-        value: https://txline-dev.txodds.com
-      - key: TXLINE_PROGRAM_ID
-        value: 6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J
-      - key: AGENT_ID
-        value: agent-conservative
-      - key: SENSITIVITY_MULTIPLIER
-        value: "3.0"
-      - key: WINDOW_SECONDS
-        value: "180"
-      - key: WARMUP_READINGS
-        value: "30"
-      - key: WALLET_KEYPAIR_PATH
-        value: /etc/secrets/agent-conservative-wallet.json # upload as a Render Secret File
-      - key: SESSION_PATH
-        value: /etc/secrets/agent-conservative-session.json # upload as a Render Secret File (optional)
-      - key: DATABASE_URL
-        sync: false
+        sync: false # Supabase connection string (Session pooler), must include ?sslmode=require or similar
 
   - type: web
     name: sentinel-dashboard
     runtime: docker
     dockerfilePath: ./apps/dashboard/Dockerfile
     dockerContext: .
-    plan: starter
+    plan: free
     envVars:
       # NEXT_PUBLIC_* are baked in at `docker build` time (see
       # apps/dashboard/Dockerfile ARG/ENV pair) -- Render is known to pass
