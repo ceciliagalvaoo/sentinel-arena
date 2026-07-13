@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rm -rf packages/*/dist packages/*/*.tsbuildinfo)",
+      "Bash(npm run *)",
+      "Bash(echo \"EXIT CODE: $?\")",
+      "Bash(SSHKEY=/tmp/claude-1000/-mnt-c-Users-Inteli-Downloads-sentinel-pro-arena/815cf77a-6aeb-46d0-98e8-86aa1d1f7125/scratchpad/oci-ssh/sentinel-agents-vm\ntimeout 60 ssh -o ConnectTimeout=55 -i \"$SSHKEY\" opc@164.152.43.164 'echo alive' 2>&1)",
+      "Bash(SSHKEY=/tmp/claude-1000/-mnt-c-Users-Inteli-Downloads-sentinel-pro-arena/815cf77a-6aeb-46d0-98e8-86aa1d1f7125/scratchpad/oci-ssh/sentinel-agents-vm\ntimeout 15 ssh -i \"$SSHKEY\" opc@164.152.43.164 '\nps aux | grep -E \"dnf|rpm\" | grep -v grep\necho \"---mem---\"; free -h\necho \"---docker?---\"; rpm -q containerd.io docker-ce 2>&1\n' 2>&1)",
+      "Bash(SSHKEY=/tmp/claude-1000/-mnt-c-Users-Inteli-Downloads-sentinel-pro-arena/815cf77a-6aeb-46d0-98e8-86aa1d1f7125/scratchpad/oci-ssh/sentinel-agents-vm\ntimeout 20 ssh -i \"$SSHKEY\" opc@164.152.43.164 '\nsudo pkill -9 -f \"dnf install\" 2>&1 || true\nsudo pkill -9 dnf 2>&1 || true\nsleep 1\nfree -h\necho \"---git?---\"; git --version 2>&1\necho \"---node module list---\"; sudo dnf module list nodejs 2>&1 | tail -15\n')",
+      "Bash(docker exec sentinel_pro_arena-postgres-1 psql -U postgres -d sentinel -c ' *)",
+      "Bash(docker exec *)",
+      "Bash(git fetch *)"
+    ]
+  }
+}

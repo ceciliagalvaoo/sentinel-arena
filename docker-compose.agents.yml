@@ -1,5 +1,5 @@
 # Standalone compose file for running ONLY the two agents on a separate
-# host (the Google Cloud e2-micro free-tier VM -- see DEPLOYMENT.md) while
+# host (the Google Cloud e2-micro free-tier VM) while
 # backend-api + dashboard live on Render and Postgres lives on Supabase.
 #
 # Unlike docker-compose.yml (local dev), there is no `postgres` service and

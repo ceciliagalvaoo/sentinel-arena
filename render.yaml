@@ -8,8 +8,7 @@
 # NOT here: Render has no free tier for Background Workers (only paid
 # Starter+), and they need to run 24/7 without sleeping (Autonomous
 # Operation is a hard judging criterion). They run instead on a free-tier
-# Google Cloud e2-micro VM via docker-compose.agents.yml -- see
-# DEPLOYMENT.md.
+# Google Cloud e2-micro VM via docker-compose.agents.yml.
 #
 # Database is also NOT defined here: Postgres lives on Supabase, not on
 # Render (Render's free Postgres tier expires around 30 days, too short for

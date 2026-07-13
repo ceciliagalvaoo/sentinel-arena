@@ -47,6 +47,15 @@ Judging happens after the tournament ends, so the dashboard's Replay mode needs 
 
 This isn't synthetic demo data: both environments sign with the **same two wallet keypairs**, so every commit/reveal transaction copied into production is still a real, independently verifiable devnet transaction on Solscan — only the database it's queryable from changed, not the underlying proof.
 
+### Every subsequent match backfills itself, no manual step
+
+The one-off `COPY` above was only needed to seed the *first* fixture, since it finished before this automation existed. Every match the agents cover after that point backfills itself: `agent-aggressive` runs a periodic sweep (`scheduleReplayBackfillSweep` in `apps/agent-aggressive/src/index.ts`, every 20 minutes) that queries `SignalStore.findFixturesNeedingReplayBackfill()` for any fixture marked `finished` with no `recorded_events` yet, and calls the same `backfillFixture()` REST backfill for each one it finds.
+
+Two details worth calling out:
+
+- **It polls instead of firing once at `game_finalised`.** TxLINE's `GET /api/scores/historical/{fixtureId}` only serves data for fixtures that started **6 hours to 2 weeks** ago — calling it the instant a match ends (a couple of hours after kickoff) fails outright, the data isn't published yet. A 20-minute poll means the worst-case delay after that 6-hour mark passes is 20 minutes, not "whenever someone remembers to run a script."
+- **Only `agent-aggressive` runs this, not both agents.** Backfilling a fixture is fixture-level work, not agent-level — running the identical sweep in both processes would just double the TxLINE REST calls and the writes to `recorded_events` for no benefit. A DB-driven poll also means a process restart loses nothing: unlike an in-memory timer, the next tick just re-queries current state.
+
 ## Oracle Cloud: the two agents
 
 Render Background Workers require a paid plan; a competing free-tier cloud VM was evaluated and rejected first for a non-technical reason — that account's billing setup required a genuine upfront prepayment (not a refundable card-verification hold) before any compute could be provisioned, which isn't a reasonable ask for a hackathon budget. Oracle Cloud's Always Free tier only requires a standard card-verification hold, and unlike a time-boxed trial credit, its Always Free resources never expire.
