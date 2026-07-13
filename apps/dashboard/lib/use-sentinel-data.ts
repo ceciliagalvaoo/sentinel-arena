@@ -99,46 +99,81 @@ export function useSentinelData(): SentinelData {
     };
   }, [selectedFixtureId, usingMockData, loadAgentCard]);
 
-  // Live WebSocket updates
+  // Live WebSocket updates -- reconnects with exponential backoff (capped at
+  // 30s, same pattern as the agents' own SSE reconnect in
+  // packages/agent-runtime) so a Render free-tier cold-start/restart while
+  // someone is watching doesn't leave the dashboard stuck until a manual
+  // refresh; the underlying signal pipeline never depends on this socket,
+  // it only affects how fast the UI reflects what's already in the DB.
   useEffect(() => {
     if (usingMockData) return;
 
-    const ws = new WebSocket(wsUrl());
-    ws.onopen = () => setWsConnected(true);
-    ws.onclose = () => setWsConnected(false);
-    ws.onerror = () => setWsConnected(false);
-    ws.onmessage = (event) => {
-      let message: { type: string; signals: SignalWithLifecycle[] };
-      try {
-        message = JSON.parse(event.data);
-      } catch {
-        return;
-      }
-      if (message.type !== "signals_updated") return;
+    let cancelled = false;
+    let socket: WebSocket | null = null;
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    let attempt = 0;
 
-      setAgentCards((prev) => {
-        const next = { ...prev };
-        for (const signal of message.signals) {
-          if (signal.fixtureId !== selectedFixtureId) continue;
-          const existing = next[signal.agentId];
-          if (!existing) continue;
-          const withoutStale = existing.recentSignals.filter((s) => s.id !== signal.id);
-          next[signal.agentId] = { ...existing, recentSignals: [signal, ...withoutStale] };
+    function connect() {
+      if (cancelled) return;
+      socket = new WebSocket(wsUrl());
+
+      socket.onopen = () => {
+        attempt = 0;
+        setWsConnected(true);
+      };
+
+      socket.onclose = () => {
+        setWsConnected(false);
+        if (cancelled) return;
+        const delay = Math.min(1000 * 2 ** attempt, 30_000);
+        attempt++;
+        reconnectTimer = setTimeout(connect, delay);
+      };
+
+      // A WebSocket always fires close right after error, so scheduling the
+      // reconnect in onclose above is enough -- this only avoids leaving a
+      // half-open socket lingering while that close event is pending.
+      socket.onerror = () => socket?.close();
+
+      socket.onmessage = (event) => {
+        let message: { type: string; signals: SignalWithLifecycle[] };
+        try {
+          message = JSON.parse(event.data);
+        } catch {
+          return;
         }
-        return next;
-      });
+        if (message.type !== "signals_updated") return;
 
-      const affectedAgents = new Set(message.signals.map((s) => s.agentId));
-      affectedAgents.forEach((agentId) => {
-        fetchAgentAccuracy(agentId)
-          .then((accuracy) =>
-            setAgentCards((prev) => (prev[agentId] ? { ...prev, [agentId]: { ...prev[agentId], accuracy } } : prev)),
-          )
-          .catch(() => undefined);
-      });
+        setAgentCards((prev) => {
+          const next = { ...prev };
+          for (const signal of message.signals) {
+            if (signal.fixtureId !== selectedFixtureId) continue;
+            const existing = next[signal.agentId];
+            if (!existing) continue;
+            const withoutStale = existing.recentSignals.filter((s) => s.id !== signal.id);
+            next[signal.agentId] = { ...existing, recentSignals: [signal, ...withoutStale] };
+          }
+          return next;
+        });
+
+        const affectedAgents = new Set(message.signals.map((s) => s.agentId));
+        affectedAgents.forEach((agentId) => {
+          fetchAgentAccuracy(agentId)
+            .then((accuracy) =>
+              setAgentCards((prev) => (prev[agentId] ? { ...prev, [agentId]: { ...prev[agentId], accuracy } } : prev)),
+            )
+            .catch(() => undefined);
+        });
+      };
+    }
+
+    connect();
+
+    return () => {
+      cancelled = true;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      socket?.close();
     };
-
-    return () => ws.close();
   }, [usingMockData, selectedFixtureId]);
 
   return {

@@ -8,6 +8,18 @@ sidebar_label: TxLINE Integration
 
 TxLINE is TxODDS's Web3 product: a hybrid on-chain (Solana) / off-chain system delivering fixtures, odds, and scores with cryptographic verification via Merkle proofs anchored on Solana. Access is permissionless — pay in TxL (Token-2022) to unlock throughput, or use the free tier, which is what this project runs on.
 
+## Why this only works with TxLINE, not any generic odds feed
+
+It would be easy to build a version of this project against any ordinary odds/scores REST API and just add commit-reveal on top. That version would prove one thing: *the agent didn't alter its own signal after the fact.* It would not prove the more important thing underneath: *the market data the agent reacted to was itself genuine, unaltered TxODDS output, and the final score used to grade the signal was real.* Without that second proof, a "cryptographically verified" track record still ultimately rests on trusting the data provider's word — exactly the "trust us" gap this project exists to close (see [Production Readiness → Innovation & Novelty](/production-readiness#innovation--novelty)).
+
+TxLINE is what makes closing that whole gap possible, specifically because of three things a generic feed doesn't offer:
+
+1. **On-chain Merkle roots for both Odds and Scores** (`daily_batch_roots`, `daily_scores_roots`, anchored on Solana), independently checkable via `validateOdds` / `validateStatV2`. This lets the grading engine attach a second, independent proof to every graded signal — not just "the agent's hash matches its own earlier commit," but "the specific odds tick that triggered this signal, and the specific final score used to grade it, are the exact data TxODDS published, unaltered." Two data providers publishing the same odds number is not the same claim; only one of them lets a third party check it on-chain without trusting either TxODDS or this project's own backend.
+2. **Both proof layers live on the same chain as the commit-reveal mechanism.** Because TxLINE's data-integrity proofs and this project's decision-integrity proofs (SPL Memo commit-reveal) both anchor to Solana, a single verifier — Solscan, or this project's own public `/api/verify` tool — can chain them together into one unbroken proof: *genuine data in → genuine decision made before the result existed → genuine result used to grade it.* Pair TxLINE with a non-blockchain data source, or pair a blockchain-native data source that isn't TxLINE with a different chain, and that single-verifier chain breaks into two separately-trusted halves.
+3. **Full-fidelity historical backfill via plain REST, for any finished fixture, at any time** (see the `startEpochDay` finding below) — not just a live stream. Judging happens after the World Cup ends, so the entire premise of a demonstrable Replay mode depends on being able to pull a *real* completed match's full tick-by-tick history after the fact, not a synthetic or truncated one. The 34,145 real odds ticks and 1,116 real score events backfilled for a single quarterfinal (see below) are what let Replay mode be indistinguishable from Live mode in the dashboard, rather than an obviously degraded fallback.
+
+None of these three are things this project's own code contributes — they're properties of TxLINE specifically. Swap TxLINE for any other odds API and the commit-reveal half of this project still compiles and runs, but the actual differentiated claim — an accuracy track record that's unforgeable *all the way down to the underlying market data*, not just at the agent's own decision boundary — stops being true.
+
 ## Setup flow (once per wallet)
 
 ```

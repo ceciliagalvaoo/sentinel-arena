@@ -10,6 +10,7 @@ const sidebars: SidebarsConfig = {
     "solana-commit-reveal",
     "dashboard-user-flow",
     "production-readiness",
+    "deployment",
     "txline-feedback-log",
     "roadmap",
   ],

@@ -8,6 +8,8 @@
   *TxODDS World Cup Hackathon · Track: Trading Tools and Agents*
 
   [**📖 Full documentation**](https://ceciliagalvaoo.github.io/sentinel-arena/) · [Architecture](https://ceciliagalvaoo.github.io/sentinel-arena/architecture) · [The Agents](https://ceciliagalvaoo.github.io/sentinel-arena/agents) · [Production Readiness](https://ceciliagalvaoo.github.io/sentinel-arena/production-readiness)
+
+  ### [🚀 Live dashboard](https://sentinel-dashboard-fq9r.onrender.com/)
 </div>
 
 ---
@@ -91,7 +93,7 @@ See **[Production Readiness](https://ceciliagalvaoo.github.io/sentinel-arena/pro
 - [x] Technical documentation — [docs site](https://ceciliagalvaoo.github.io/sentinel-arena/)
 - [x] [TxLINE API feedback log](https://ceciliagalvaoo.github.io/sentinel-arena/txline-feedback-log), kept since day one
 - [X] Demo video (≤5 min)
-- [X] Hosted dashboard link
+- [x] [Hosted dashboard link](https://sentinel-dashboard-fq9r.onrender.com/) — see [Deployment](https://ceciliagalvaoo.github.io/sentinel-arena/deployment) for how it's hosted and why
 
 ## Authors
 
