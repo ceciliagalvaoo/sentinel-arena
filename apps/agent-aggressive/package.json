@@ -12,9 +12,11 @@
     "@sentinel/agent-runtime": "*",
     "@sentinel/commit-reveal": "*",
     "@sentinel/market-data-source": "*",
+    "@sentinel/recorder-service": "*",
     "@sentinel/shared-types": "*",
     "@sentinel/txline-client": "*",
     "@solana/web3.js": "^1.95.0",
+    "axios": "^1.7.0",
     "pg": "^8.13.0",
     "dotenv": "^16.4.7"
   },

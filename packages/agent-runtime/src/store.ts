@@ -84,6 +84,27 @@ export class SignalStore {
     await this.db.query(`UPDATE tracked_fixtures SET status = 'finished' WHERE fixture_id = $1`, [fixtureId]);
   }
 
+  /**
+   * Finished fixtures with no `recorded_events` yet, old enough for
+   * `GET /api/scores/historical` to actually have data (TxLINE only serves
+   * that endpoint for fixtures that started between 6h and 2 weeks ago —
+   * see docs/txline-integration.md). A fixture that just finished a moment
+   * ago is deliberately excluded here; the periodic sweep that calls this
+   * (see apps/agent-aggressive/src/index.ts) picks it up once enough time
+   * has passed, with no in-memory timer to lose across a process restart.
+   */
+  async findFixturesNeedingReplayBackfill(): Promise<{ fixture_id: number }[]> {
+    const { rows } = await this.db.query<{ fixture_id: number }>(
+      `SELECT tf.fixture_id
+       FROM tracked_fixtures tf
+       WHERE tf.status = 'finished'
+         AND tf.start_time IS NOT NULL
+         AND tf.start_time < now() - interval '6 hours'
+         AND NOT EXISTS (SELECT 1 FROM recorded_events re WHERE re.fixture_id = tf.fixture_id)`,
+    );
+    return rows;
+  }
+
   /** Returns false (not an error) if this exact agent+event+outcome was already recorded — the idempotency guard. */
   async tryCreateSignal(input: SignalRecordInput): Promise<boolean> {
     try {

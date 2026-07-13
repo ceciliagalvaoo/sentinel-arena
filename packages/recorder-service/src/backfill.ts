@@ -1,5 +1,5 @@
 import type { AxiosInstance } from "axios";
-import type { Client } from "pg";
+import type { QueryResult, QueryResultRow } from "pg";
 import {
   fetchFixturesSnapshot,
   fetchOddsUpdatesByInterval,
@@ -14,6 +14,18 @@ export interface BackfillResult {
   oddsEventCount: number;
   totalInserted: number;
   fixture: RawFixture | null;
+}
+
+/**
+ * Structural subset of pg's `Client` — deliberately not the concrete `Client`
+ * type, since this runs a `BEGIN`/`COMMIT`/`ROLLBACK` transaction and needs
+ * one dedicated connection either way. A `PoolClient` (from `pool.connect()`)
+ * satisfies this just as well as a plain `Client` does; the concrete `Client`
+ * type unnecessarily rejected `PoolClient` on properties this code never
+ * touches (host, port, ssl, ...).
+ */
+export interface Queryable {
+  query<T extends QueryResultRow = QueryResultRow>(text: string, params?: unknown[]): Promise<QueryResult<T>>;
 }
 
 interface Bucket {
@@ -72,7 +84,7 @@ interface RecordedEventInsert {
   sequenceIndex: number;
 }
 
-async function insertRecordedEventsBatched(db: Client, rows: RecordedEventInsert[], batchSize = 500): Promise<void> {
+async function insertRecordedEventsBatched(db: Queryable, rows: RecordedEventInsert[], batchSize = 500): Promise<void> {
   for (let offset = 0; offset < rows.length; offset += batchSize) {
     const chunk = rows.slice(offset, offset + batchSize);
     const values: unknown[] = [];
@@ -101,7 +113,7 @@ async function insertRecordedEventsBatched(db: Client, rows: RecordedEventInsert
  */
 export async function backfillFixture(params: {
   apiClient: AxiosInstance;
-  db: Client;
+  db: Queryable;
   fixtureId: number;
   /** Minutes of pre/post-match buffer for the odds window. Default 15. */
   bufferMinutes?: number;

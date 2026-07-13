@@ -10,6 +10,14 @@
  * scripts/seed-replay-data.ts) instead of the live TxLINE stream — this is
  * how the agent stays demonstrable after the World Cup ends (architecture
  * doc section 0.2/2.2).
+ *
+ * This process (only this one, not agent-conservative — the work below is
+ * fixture-level, not agent-specific, so one owner is enough) also runs a
+ * periodic sweep that auto-backfills `recorded_events` for any fixture that
+ * finished live, so production Replay mode has real data without a manual
+ * `scripts/seed-replay-data.ts` run after every match. See
+ * scheduleReplayBackfillSweep() below for why this can't just happen the
+ * instant a match ends.
  */
 import { readFileSync } from "node:fs";
 import { existsSync } from "node:fs";
@@ -22,6 +30,8 @@ import { createApiClient, createProgram, getNetworkConfig, resolveNetworkFromEnv
 import { LiveTxLineSource, ReplayDataSource, type MarketDataSource } from "@sentinel/market-data-source";
 import { AgentLoop, SignalStore } from "@sentinel/agent-runtime";
 import { resolveDatabaseSsl } from "@sentinel/shared-types";
+import { backfillFixture } from "@sentinel/recorder-service";
+import type { AxiosInstance } from "axios";
 
 loadDotenv(); // apps/agent-aggressive/.env when run from this package's directory (npm workspace scripts do this)
 
@@ -110,6 +120,45 @@ async function buildSource(
   );
 }
 
+const REPLAY_BACKFILL_SWEEP_MS = 20 * 60 * 1000;
+
+/**
+ * TxLINE's `GET /api/scores/historical/{fixtureId}` only serves data for
+ * fixtures that started between 6h and 2 weeks ago (see
+ * docs/txline-integration.md) — calling it right when `game_finalised`
+ * fires (a couple of hours after kickoff) fails outright, data isn't there
+ * yet. So instead of an immediate one-shot trigger, this polls periodically
+ * for any fixture that's both finished and old enough, and backfills it.
+ * Re-running this after a crash/restart costs nothing extra to get right —
+ * unlike an in-memory setTimeout, a DB query has no state to lose.
+ */
+function scheduleReplayBackfillSweep(agentId: string, pool: Pool, store: SignalStore, maybeApiClient: AxiosInstance | undefined): void {
+  if (!maybeApiClient) return; // no session -> can't hit TxLINE's REST endpoints either
+  const apiClient = maybeApiClient; // narrowed once, outside the closure below
+
+  async function sweep(): Promise<void> {
+    const due = await store.findFixturesNeedingReplayBackfill();
+    for (const { fixture_id: fixtureId } of due) {
+      const client = await pool.connect();
+      try {
+        const result = await backfillFixture({ apiClient, db: client, fixtureId });
+        console.log(
+          `[${agentId}] AUTO-BACKFILL fixture=${fixtureId} odds=${result.oddsEventCount} scores=${result.scoreEventCount}`,
+        );
+      } catch (err) {
+        console.error(`[${agentId}] auto-backfill failed for fixture ${fixtureId} — will retry next sweep`, err);
+      } finally {
+        client.release();
+      }
+    }
+  }
+
+  sweep().catch((err) => console.error(`[${agentId}] replay-backfill sweep failed`, err));
+  setInterval(() => {
+    sweep().catch((err) => console.error(`[${agentId}] replay-backfill sweep failed`, err));
+  }, REPLAY_BACKFILL_SWEEP_MS);
+}
+
 async function main() {
   assertEnv();
 
@@ -166,6 +215,7 @@ async function main() {
   });
 
   await loop.start();
+  if (!process.env.REPLAY_FIXTURE_ID) scheduleReplayBackfillSweep(agentId, pool, store, apiClient);
   await source.start();
   // LiveTxLineSource.start() resolves immediately (the reconnect loops run
   // detached, indefinitely) — only REPLAY mode actually runs to completion.
