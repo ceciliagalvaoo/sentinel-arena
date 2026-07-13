@@ -6,6 +6,7 @@ coverage/
 .turbo/
 .cache/
 .vercel/
+.docusaurus/
 
 # Secrets - wallet keypairs and API sessions must never be versioned.
 secrets/

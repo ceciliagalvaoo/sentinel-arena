@@ -1,0 +1,70 @@
+/**
+ * Sentinel Arena brand palette — same source as apps/dashboard/app/globals.css
+ * (validated via the dataviz skill: deep indigo-violet accent, deliberately
+ * its own hue family rather than the industry-standard AI-product orange).
+ */
+:root {
+  --ifm-color-primary: #5b3fd1;
+  --ifm-color-primary-dark: #4b2fc3;
+  --ifm-color-primary-darker: #452bb2;
+  --ifm-color-primary-darkest: #3b259a;
+  --ifm-color-primary-light: #7058d7;
+  --ifm-color-primary-lighter: #7e68db;
+  --ifm-color-primary-lightest: #9a89e3;
+  --ifm-code-font-size: 92%;
+  --docusaurus-highlighted-code-line-bg: rgba(91, 63, 209, 0.1);
+
+  --ifm-background-color: #f9f9f7;
+  --ifm-background-surface-color: #fcfcfb;
+  --ifm-navbar-background-color: #fcfcfb;
+  --ifm-footer-background-color: #0b0b0b;
+
+  /* The two agents' identity colors — reused in callouts/badges across the docs. */
+  --sentinel-aggressive: #e5502f;
+  --sentinel-aggressive-soft: #fceae6;
+  --sentinel-conservative: #2a78d6;
+  --sentinel-conservative-soft: #dfeaf9;
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: #9c86f0;
+  --ifm-color-primary-dark: #866bed;
+  --ifm-color-primary-darker: #7759ea;
+  --ifm-color-primary-darkest: #613de7;
+  --ifm-color-primary-light: #b2a1f3;
+  --ifm-color-primary-lighter: #c1b3f6;
+  --ifm-color-primary-lightest: #dfd8fa;
+  --docusaurus-highlighted-code-line-bg: rgba(156, 134, 240, 0.18);
+
+  --ifm-background-color: #0d0d0d;
+  --ifm-background-surface-color: #1a1a19;
+  --ifm-navbar-background-color: #1a1a19;
+
+  --sentinel-aggressive: #d6431f;
+  --sentinel-aggressive-soft: #3d2016;
+  --sentinel-conservative: #3987e5;
+  --sentinel-conservative-soft: #182a3d;
+}
+
+.navbar {
+  box-shadow: 0 1px 0 0 var(--ifm-toc-border-color);
+}
+
+/* Agent badge — used in MDX as <span className="agent-badge agent-badge--aggressive">Aggressive</span> */
+.agent-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.85em;
+}
+.agent-badge--aggressive {
+  background: var(--sentinel-aggressive-soft);
+  color: var(--sentinel-aggressive);
+}
+.agent-badge--conservative {
+  background: var(--sentinel-conservative-soft);
+  color: var(--sentinel-conservative);
+}
