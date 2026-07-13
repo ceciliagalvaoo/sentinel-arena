@@ -21,6 +21,7 @@ import { Pool } from "pg";
 import { createApiClient, createProgram, getNetworkConfig, resolveNetworkFromEnv, startGuestAuth } from "@sentinel/txline-client";
 import { LiveTxLineSource, ReplayDataSource, type MarketDataSource } from "@sentinel/market-data-source";
 import { AgentLoop, SignalStore } from "@sentinel/agent-runtime";
+import { resolveDatabaseSsl } from "@sentinel/shared-types";
 
 loadDotenv(); // apps/agent-aggressive/.env when run from this package's directory (npm workspace scripts do this)
 
@@ -71,7 +72,10 @@ interface Session {
 }
 
 function loadSession(agentId: string): Session | null {
-  const sessionPath = join(REPO_ROOT, "secrets", `${agentId}-session.json`);
+  // SESSION_PATH overrides the default repo-relative location -- needed
+  // wherever the deploy platform mounts secret files somewhere other than
+  // ./secrets (e.g. Render's Secret Files land under /etc/secrets/<name>).
+  const sessionPath = process.env.SESSION_PATH ?? join(REPO_ROOT, "secrets", `${agentId}-session.json`);
   if (!existsSync(sessionPath)) return null;
   return JSON.parse(readFileSync(sessionPath, "utf8")) as Session;
 }
@@ -114,7 +118,8 @@ async function main() {
   const config = getNetworkConfig(network);
   const wallet = loadWallet(process.env.WALLET_KEYPAIR_PATH!);
   const connection = new Connection(config.rpcUrl, "confirmed");
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const databaseUrl = process.env.DATABASE_URL!;
+  const pool = new Pool({ connectionString: databaseUrl, ssl: resolveDatabaseSsl(databaseUrl) });
   const store = new SignalStore(pool);
 
   console.log(`[${agentId}] network=${network} wallet=${wallet.publicKey.toBase58()}`);

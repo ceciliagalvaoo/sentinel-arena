@@ -18,6 +18,7 @@ import { fileURLToPath } from "node:url";
 import { Client } from "pg";
 import { createApiClient, getNetworkConfig, resolveNetworkFromEnv } from "@sentinel/txline-client";
 import { backfillFixture } from "@sentinel/recorder-service";
+import { resolveDatabaseSsl } from "@sentinel/shared-types";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(__dirname, "..");
@@ -51,7 +52,7 @@ async function main() {
 
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) throw new Error("DATABASE_URL is not set");
-  const db = new Client({ connectionString: databaseUrl });
+  const db = new Client({ connectionString: databaseUrl, ssl: resolveDatabaseSsl(databaseUrl) });
   await db.connect();
 
   try {

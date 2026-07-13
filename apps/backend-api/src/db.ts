@@ -10,12 +10,13 @@ import {
   type SignalRow,
   type SignalWithLifecycle,
   type TrackedFixtureRow,
+  resolveDatabaseSsl,
 } from "@sentinel/shared-types";
 
 export function createPool(): Pool {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) throw new Error("DATABASE_URL is not set");
-  return new Pool({ connectionString });
+  return new Pool({ connectionString, ssl: resolveDatabaseSsl(connectionString) });
 }
 
 interface AgentDbRow {

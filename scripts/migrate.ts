@@ -8,6 +8,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Client } from "pg";
+import { resolveDatabaseSsl } from "@sentinel/shared-types";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const MIGRATIONS_DIR = join(__dirname, "..", "db", "migrations");
@@ -18,7 +19,7 @@ async function main() {
     throw new Error("DATABASE_URL is not set — copy .env.example to .env and configure it first");
   }
 
-  const client = new Client({ connectionString: databaseUrl });
+  const client = new Client({ connectionString: databaseUrl, ssl: resolveDatabaseSsl(databaseUrl) });
   await client.connect();
 
   try {

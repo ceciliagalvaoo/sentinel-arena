@@ -20,6 +20,7 @@ import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import { Keypair } from "@solana/web3.js";
 import { Client } from "pg";
+import { resolveDatabaseSsl } from "@sentinel/shared-types";
 import {
   activateApiToken,
   createProgram,
@@ -102,7 +103,7 @@ async function main() {
   console.log(`[${agentId}] session persisted to ${sessionPath}`);
 
   if (env.DATABASE_URL) {
-    const client = new Client({ connectionString: env.DATABASE_URL });
+    const client = new Client({ connectionString: env.DATABASE_URL, ssl: resolveDatabaseSsl(env.DATABASE_URL) });
     await client.connect();
     try {
       await client.query("UPDATE agents SET wallet_pubkey = $1 WHERE id = $2", [payer.publicKey.toBase58(), agentId]);

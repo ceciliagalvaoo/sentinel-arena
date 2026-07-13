@@ -16,6 +16,17 @@ export type AgentId = "agent-aggressive" | "agent-conservative" | (string & {});
  */
 export const MIN_LAMPORTS_WARNING = 10_000_000; // ~0.01 SOL — plenty of runway for memo tx fees
 
+/**
+ * Managed Postgres (Supabase, Render Postgres, etc.) requires TLS; the local
+ * docker-compose Postgres has none configured. Every `new Pool()`/`new
+ * Client()` call site (apps/agent-*, apps/backend-api, scripts/*) should
+ * pass this instead of hand-rolling the same host check.
+ */
+export function resolveDatabaseSsl(connectionString: string): { rejectUnauthorized: false } | undefined {
+  const isLocalHost = /(^|@)(localhost|127\.0\.0\.1|postgres)(:|\/)/.test(connectionString);
+  return isLocalHost ? undefined : { rejectUnauthorized: false };
+}
+
 export interface AgentRow {
   id: AgentId;
   strategyName: string;
