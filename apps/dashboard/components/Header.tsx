@@ -9,6 +9,24 @@ import { TutorialModal } from "./TutorialModal";
 
 export type Mode = "live" | "replay";
 
+/**
+ * A "live" fixture only means its odds market is streaming right now — not that
+ * the match is being played. Kickoff can still be hours away (agents trade the
+ * pre-match market too). This spells that out from the fixture's startTime.
+ * Client-only (uses Date.now()), so it's computed in an effect to avoid an
+ * SSR/hydration mismatch.
+ */
+function describeKickoff(startTimeIso: string): string {
+  const diff = Date.parse(startTimeIso) - Date.now();
+  if (Number.isNaN(diff)) return "LISTENING FOR ON-CHAIN COMMITS…";
+  if (diff <= 0) return "IN-PLAY ODDS LIVE — MATCH STARTED";
+  const d = Math.floor(diff / 86_400_000);
+  const h = Math.floor((diff % 86_400_000) / 3_600_000);
+  const m = Math.floor((diff % 3_600_000) / 60_000);
+  const eta = d > 0 ? `~${d}D ${h}H` : h > 0 ? `~${h}H ${m}M` : `~${m}M`;
+  return `PRE-MATCH ODDS LIVE · KICKOFF IN ${eta}`;
+}
+
 interface HeaderProps {
   filteredFixtures: TrackedFixtureRow[];
   selectedFixtureId: number | null;
@@ -37,6 +55,20 @@ export function Header({
 }: HeaderProps) {
   const selectedFixture = filteredFixtures.find((f) => f.fixtureId === selectedFixtureId);
   const [tutorialOpen, setTutorialOpen] = useState(false);
+  const [kickoff, setKickoff] = useState<string | null>(null);
+
+  // Refresh the pre-match/in-play label every minute (client-only).
+  const startTime = selectedFixture?.startTime ?? null;
+  useEffect(() => {
+    if (mode !== "live" || !startTime) {
+      setKickoff(null);
+      return;
+    }
+    const update = () => setKickoff(describeKickoff(startTime));
+    update();
+    const t = setInterval(update, 60_000);
+    return () => clearInterval(t);
+  }, [mode, startTime]);
 
   const rushMiniRef = useRef<HTMLCanvasElement>(null);
   const sageMiniRef = useRef<HTMLCanvasElement>(null);
@@ -140,7 +172,7 @@ export function Header({
         ) : mode === "live" ? (
           <span className="inline-flex items-center gap-1.5 text-[8px] text-good">
             <span className="h-1.5 w-1.5 animate-arcblink bg-good" />
-            {wsConnected ? "LISTENING FOR ON-CHAIN COMMITS…" : "RECONNECTING…"}
+            {!wsConnected ? "RECONNECTING…" : kickoff ?? "LISTENING FOR ON-CHAIN COMMITS…"}
           </span>
         ) : (
           <span className="inline-flex items-center gap-1.5 text-[8px] text-muted">

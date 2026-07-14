@@ -56,7 +56,7 @@ export function AgentCard({ data, variant, displayName, tagline, participant1, p
       <AccuracyCard accuracy={data.accuracy} variant={variant} />
 
       <div className="mt-1 flex items-center justify-between gap-2">
-        <span className="text-[8px] tracking-widest text-muted">EVENT FEED</span>
+        <span className="text-[8px] tracking-widest text-muted">EVENT FEED · THIS MATCH</span>
         {total > FEED_LIMIT && (
           <span className="text-[7px] text-muted">
             SHOWING {FEED_LIMIT} OF {total}

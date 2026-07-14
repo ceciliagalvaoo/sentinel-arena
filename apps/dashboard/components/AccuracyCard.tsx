@@ -17,6 +17,10 @@ export function AccuracyCard({ accuracy, variant }: AccuracyCardProps) {
 
   return (
     <div className="flex flex-col gap-2.5">
+      {/* This is the agent's lifetime record across every match it has graded —
+          NOT just the fixture shown in the feed below (a conservative agent can
+          have a strong overall record yet zero signals on the current match). */}
+      <div className="text-[7px] tracking-wide text-muted">OVERALL ACCURACY · ALL MATCHES</div>
       <div className="flex items-baseline gap-3">
         <span className="text-2xl leading-none tabular-nums text-ink">{pct === null ? "—" : `${pct}%`}</span>
         <span className="text-[8px] leading-relaxed tabular-nums text-muted">
