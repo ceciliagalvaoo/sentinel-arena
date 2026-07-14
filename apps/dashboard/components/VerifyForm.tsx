@@ -6,16 +6,16 @@ import { solscanTxUrl } from "@/lib/format";
 import { CopyableHash } from "./CopyableHash";
 
 const CHECK_LABELS: Record<keyof VerificationResult["checks"], string> = {
-  signalIdsMatch: "Signal IDs match between commit and reveal",
-  referencesCorrectCommit: "Reveal references the correct commit",
-  hashesMatch: "Revealed hash matches the committed hash",
-  commitBeforeReveal: "Commit happened before the reveal",
+  signalIdsMatch: "SIGNAL IDS MATCH BETWEEN COMMIT AND REVEAL",
+  referencesCorrectCommit: "REVEAL REFERENCES THE CORRECT COMMIT",
+  hashesMatch: "REVEALED HASH MATCHES THE COMMITTED HASH",
+  commitBeforeReveal: "COMMIT HAPPENED BEFORE THE REVEAL",
 };
 
 /**
- * Standalone tool — works for ANY commit/reveal pair using the Sentinel
- * memo format, not just ones our own two agents produced (architecture doc
- * section 4.3).
+ * Standalone verifier — works for ANY commit/reveal pair using the Sentinel
+ * memo format, not just our two agents. Same on-chain logic as before; arcade
+ * skin only.
  */
 export function VerifyForm() {
   const [commitTxSig, setCommitTxSig] = useState("");
@@ -33,70 +33,63 @@ export function VerifyForm() {
       const verification = await verifyProof(commitTxSig.trim(), revealTxSig.trim());
       setResult(verification);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Verification failed — check the signatures and network.");
+      setError(err instanceof Error ? err.message : "VERIFICATION FAILED — CHECK THE SIGNATURES AND NETWORK.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3 rounded-xl2 border border-border bg-surface-raised p-5">
-        <label className="flex flex-col gap-1 text-xs text-ink-secondary">
-          Commit tx signature
+    <div className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3.5 bg-panel-soft p-5">
+        <label className="flex flex-col gap-1.5 text-[8px] text-muted">
+          COMMIT TX SIGNATURE
           <input
             required
             value={commitTxSig}
             onChange={(e) => setCommitTxSig(e.target.value)}
-            placeholder="e.g. 5a8btJRsTBjYeTvDWvXJkwdBdBT7Xs9Lk9CJxL97mdrQ..."
-            className="rounded-xl2 border border-border bg-surface px-3 py-2 font-mono text-xs text-ink outline-none focus:border-accent"
+            placeholder="5a8btJRsTBjYeTvDWvXJkwdBdBT7Xs9Lk9CJxL97mdrQ…"
+            className="border-2 border-arcborder bg-bg-deep p-2.5 font-pixel text-[8px] text-ink outline-none focus:border-accent"
           />
         </label>
-        <label className="flex flex-col gap-1 text-xs text-ink-secondary">
-          Reveal tx signature
+        <label className="flex flex-col gap-1.5 text-[8px] text-muted">
+          REVEAL TX SIGNATURE
           <input
             required
             value={revealTxSig}
             onChange={(e) => setRevealTxSig(e.target.value)}
-            placeholder="e.g. 294QuTAh2hWAiqJBkWhmMCYerUiGWbj2GywfyovnTKZ..."
-            className="rounded-xl2 border border-border bg-surface px-3 py-2 font-mono text-xs text-ink outline-none focus:border-accent"
+            placeholder="294QuTAh2hWAiqJBkWhmMCYerUiGWbj2GywfyovnTKZ…"
+            className="border-2 border-arcborder bg-bg-deep p-2.5 font-pixel text-[8px] text-ink outline-none focus:border-accent"
           />
         </label>
-        <button
-          type="submit"
-          disabled={loading}
-          className="mt-1 rounded-xl2 bg-accent px-4 py-2 text-sm font-medium text-accent-ink transition hover:opacity-90 disabled:opacity-50"
-        >
-          {loading ? "Verifying…" : "Verify proof"}
+        <button type="submit" disabled={loading} className="arc-btn bg-accent p-3.5 text-[10px] text-accent-ink disabled:opacity-50">
+          {loading ? "VERIFYING…" : "VERIFY PROOF"}
         </button>
       </form>
 
-      {error && <p className="rounded-xl2 border border-critical/30 bg-critical/10 p-4 text-sm text-critical">{error}</p>}
+      {error && <p className="bg-panel-soft p-4 text-[8px] leading-relaxed text-bad">{error}</p>}
 
       {result && (
-        <div className={`rounded-xl2 border p-5 ${result.valid ? "border-good/30 bg-good/5" : "border-critical/30 bg-critical/5"}`}>
-          <p className={`text-lg font-semibold ${result.valid ? "text-good" : "text-critical"}`}>
-            {result.valid ? "✅ Valid proof" : "❌ Invalid proof"}
-          </p>
-
-          <ul className="mt-3 flex flex-col gap-1.5">
+        <div className="flex flex-col gap-3 p-5" style={{ background: result.valid ? "#1f2b21" : "#2b1f1f" }}>
+          <div className={`text-[12px] ${result.valid ? "text-good" : "text-bad"}`}>
+            {result.valid ? "✓ VALID PROOF" : "✗ INVALID PROOF"}
+          </div>
+          <div className="flex flex-col gap-2 text-[8px] leading-relaxed text-ink-soft">
             {(Object.keys(result.checks) as Array<keyof VerificationResult["checks"]>).map((key) => (
-              <li key={key} className="flex items-center gap-2 text-sm">
-                <span className={result.checks[key] ? "text-good" : "text-critical"}>{result.checks[key] ? "✓" : "✗"}</span>
-                <span className="text-ink-secondary">{CHECK_LABELS[key]}</span>
-              </li>
+              <div key={key}>
+                <span className={result.checks[key] ? "text-good" : "text-bad"}>{result.checks[key] ? "✓" : "✗"}</span> {CHECK_LABELS[key]}
+              </div>
             ))}
-          </ul>
-
-          <div className="mt-4 flex flex-wrap gap-4 border-t border-border pt-3 text-xs text-ink-muted">
+          </div>
+          <div className="flex flex-wrap gap-4 border-t-2 border-arcborder pt-2.5 text-[7px] text-muted">
             <span>
-              commit slot: <span className="font-mono text-ink-secondary">{result.commitSlot ?? "—"}</span>
+              COMMIT SLOT: <span className="text-ink">{result.commitSlot ?? "—"}</span>
             </span>
             <span>
-              reveal slot: <span className="font-mono text-ink-secondary">{result.revealSlot ?? "—"}</span>
+              REVEAL SLOT: <span className="text-ink">{result.revealSlot ?? "—"}</span>
             </span>
-            <CopyableHash value={commitTxSig} href={solscanTxUrl(commitTxSig)} />
-            <CopyableHash value={revealTxSig} href={solscanTxUrl(revealTxSig)} />
+            <CopyableHash value={commitTxSig} href={solscanTxUrl(commitTxSig)} className="text-[7px]" />
+            <CopyableHash value={revealTxSig} href={solscanTxUrl(revealTxSig)} className="text-[7px]" />
           </div>
         </div>
       )}

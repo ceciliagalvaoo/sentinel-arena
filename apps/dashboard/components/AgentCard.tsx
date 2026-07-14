@@ -1,115 +1,97 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import type { AgentCardData } from "@/lib/types";
 import { formatSol, solscanAddressUrl } from "@/lib/format";
-import { SquirrelMascot, type MascotMood, type SquirrelVariant } from "./SquirrelMascot";
-import { StatusDot } from "./StatusDot";
 import { AccuracyCard } from "./AccuracyCard";
 import { EventFeed } from "./EventFeed";
 import { CopyableHash } from "./CopyableHash";
+import { SignalsModal } from "./SignalsModal";
+
+/** How many feed rows the card shows before "VIEW ALL" — keeps the card short so the chart stays reachable. */
+const FEED_LIMIT = 20;
 
 interface AgentCardProps {
   data: AgentCardData;
-  variant: SquirrelVariant;
+  variant: "rush" | "sage";
+  /** RUSH / SAGE */
   displayName: string;
+  /** e.g. "THE AGGRESSIVE AGENT · k=1.5 · REACTS FAST TO ANY MOVE" */
   tagline: string;
   participant1?: string | null;
   participant2?: string | null;
 }
 
-const ACCENT_BORDER: Record<SquirrelVariant, string> = {
-  aggressive: "border-t-aggressive",
-  conservative: "border-t-conservative",
-};
-
-/** A colored ring behind the mascot while it reacts — text/labels stay in ink tokens (dataviz rule), this is purely the glow, never the only cue (motion + pose carry it too). */
-const MOOD_GLOW: Record<MascotMood, string> = {
-  idle: "bg-surface",
-  alert: "bg-surface",
-  correct: "bg-good/10",
-  incorrect: "bg-critical/10",
-};
-
+/**
+ * Arcade agent card (borderless, tinted). The mascot moved out of the card into
+ * the shared ArenaScene; the card now carries only the numbers: name + verified
+ * badge, strategy line, accuracy, the pixel bar, and the event feed. A micro
+ * wallet line stays as real on-chain proof (production readiness).
+ */
 export function AgentCard({ data, variant, displayName, tagline, participant1, participant2 }: AgentCardProps) {
-  const [mood, setMood] = useState<MascotMood>("idle");
-  const latestSignalId = data.recentSignals[0]?.id;
-  const previousLatestId = useRef(latestSignalId);
-  const previousGradedIds = useRef<Set<string>>(new Set(data.recentSignals.filter((s) => s.grade !== null).map((s) => s.id)));
-  const moodTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  function flashMood(next: MascotMood, ms: number) {
-    if (moodTimeout.current) clearTimeout(moodTimeout.current);
-    setMood(next);
-    moodTimeout.current = setTimeout(() => setMood("idle"), ms);
-  }
-
-  // Two distinct reactions, in priority order: a signal getting graded
-  // (correct = cheer, incorrect = wince) is the more meaningful event, so it
-  // wins over the plainer "a new signal just landed" alert pulse if both
-  // happen in the same tick. Fires for real live updates AND the replay
-  // showcase animation, since both update data.recentSignals the same way.
-  useEffect(() => {
-    const currentGraded = data.recentSignals.filter((s) => s.grade !== null);
-    const newlyGraded = currentGraded.find((s) => !previousGradedIds.current.has(s.id));
-    previousGradedIds.current = new Set(currentGraded.map((s) => s.id));
-
-    if (newlyGraded) {
-      previousLatestId.current = latestSignalId;
-      flashMood(newlyGraded.grade!.correct ? "correct" : "incorrect", 1400);
-      return;
-    }
-
-    if (latestSignalId && latestSignalId !== previousLatestId.current) {
-      flashMood("alert", 900);
-    }
-    previousLatestId.current = latestSignalId;
-  }, [data.recentSignals, latestSignalId]);
-
-  useEffect(
-    () => () => {
-      if (moodTimeout.current) clearTimeout(moodTimeout.current);
-    },
-    [],
-  );
-
-  // Sourced from the backend's full-set aggregate (packages/shared-types
-  // AgentAccuracy.allValidationChecked), never computed from the capped
-  // recentSignals list — a badge built from a sample could say "verified"
-  // while older, unfetched signals weren't (sentinel-dashboard-dev principle #4).
+  const [allOpen, setAllOpen] = useState(false);
+  const nameColor = variant === "rush" ? "text-rush" : "text-sage";
+  // Sourced from the backend's full-set aggregate, never the capped feed — a
+  // badge built from a sample could say "verified" while older signals weren't.
   const fullyVerified = data.accuracy.allValidationChecked === true;
+  const hasGraded = data.accuracy.totalGradedSignals > 0;
+
+  const total = data.recentSignals.length;
+  const visibleSignals = data.recentSignals.slice(0, FEED_LIMIT);
 
   return (
-    <section className={`flex flex-col gap-4 rounded-xl2 border border-border border-t-4 ${ACCENT_BORDER[variant]} bg-surface-raised p-5`}>
-      <header className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-xl2 transition-colors duration-300 ${MOOD_GLOW[mood]}`}>
-            <SquirrelMascot variant={variant} mood={mood} />
-          </div>
-          <div>
-            <h2 className="font-serif text-xl text-ink">{displayName}</h2>
-            <p className="text-xs text-ink-secondary">{tagline}</p>
-          </div>
-        </div>
-        <StatusDot status={data.status} />
-      </header>
-
-      <div className="flex items-center justify-between rounded-xl2 bg-surface px-3 py-2 text-xs">
-        <span className="text-ink-muted">Wallet</span>
-        <div className="flex items-center gap-3">
-          <CopyableHash value={data.agent.walletPubkey} href={solscanAddressUrl(data.agent.walletPubkey)} />
-          <span className="font-mono text-ink-secondary">{formatSol(data.wallet.sol)}</span>
-        </div>
+    <div className="flex flex-col gap-2.5 bg-panel-soft p-4">
+      <div className="flex items-center justify-between gap-2">
+        <div className={`text-[12px] ${nameColor}`}>{displayName}</div>
+        {hasGraded &&
+          (fullyVerified ? (
+            <div className="text-[8px] text-good">✓ VERIFIED ON-CHAIN</div>
+          ) : (
+            <div className="animate-arcblink text-[8px] text-warn">VERIFY PENDING…</div>
+          ))}
       </div>
 
-      <AccuracyCard accuracy={data.accuracy} fullyVerified={fullyVerified} />
+      <div className="text-[8px] leading-relaxed text-muted">{tagline}</div>
 
-      <div>
-        <div className="mb-2">
-          <span className="text-xs font-medium uppercase tracking-wide text-ink-muted">Event feed</span>
-        </div>
-        <EventFeed signals={data.recentSignals} participant1={participant1} participant2={participant2} />
+      <AccuracyCard accuracy={data.accuracy} variant={variant} />
+
+      <div className="mt-1 flex items-center justify-between gap-2">
+        <span className="text-[8px] tracking-widest text-muted">EVENT FEED</span>
+        {total > FEED_LIMIT && (
+          <span className="text-[7px] text-muted">
+            SHOWING {FEED_LIMIT} OF {total}
+          </span>
+        )}
       </div>
-    </section>
+      <EventFeed signals={visibleSignals} participant1={participant1} participant2={participant2} />
+
+      {total > FEED_LIMIT && (
+        <button
+          type="button"
+          onClick={() => setAllOpen(true)}
+          className="arc-btn-sm bg-panel-raised px-3 py-2 text-[8px] text-ink"
+        >
+          ▸ VIEW ALL {total} SIGNALS
+        </button>
+      )}
+
+      <SignalsModal
+        open={allOpen}
+        onClose={() => setAllOpen(false)}
+        title={displayName}
+        variant={variant}
+        signals={data.recentSignals}
+        participant1={participant1}
+        participant2={participant2}
+      />
+
+      <div className="mt-1 flex flex-wrap items-center justify-between gap-2 text-[7px] text-muted">
+        <span className="tracking-wide">WALLET</span>
+        <div className="flex items-center gap-3">
+          <CopyableHash value={data.agent.walletPubkey} href={solscanAddressUrl(data.agent.walletPubkey)} className="text-[7px]" />
+          <span className="text-muted">{formatSol(data.wallet.sol)}</span>
+        </div>
+      </div>
+    </div>
   );
 }

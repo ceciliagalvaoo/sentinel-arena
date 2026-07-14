@@ -6,8 +6,21 @@ import type { AgentAccuracy, AgentId, SignalWithLifecycle } from "./types";
 const AGENT_IDS: AgentId[] = ["agent-aggressive", "agent-conservative"];
 
 /** How long the whole replay takes to play out, regardless of how long the real match's odds window actually spanned. */
-const ANIMATION_DURATION_MS = 60_000;
+const ANIMATION_DURATION_MS = 45_000;
 const TICK_MS = 200;
+/**
+ * Commits stream across this fraction of the run (leaving the tail for the
+ * last reveals + the end-of-round KO), then each signal reveals REVEAL_LAG_MS
+ * later. This is the ONLY synthetic part of the replay: the pacing. The real
+ * detection ORDER and relative spacing are preserved (appearAtMs is normalised
+ * over the real detection window), and every hash, result and grade shown is
+ * the untouched on-chain data. Reveal timestamps are NOT replayed literally on
+ * purpose — a real match reveals hours after commit, which would compress every
+ * commit into the first blink and leave a long dead middle (the arcade demo
+ * needs the squirrels reacting throughout, not once at the very end).
+ */
+const APPEAR_WINDOW = 0.78;
+const REVEAL_LAG_MS = 6_000;
 
 interface ScheduledSignal {
   signal: SignalWithLifecycle;
@@ -15,14 +28,14 @@ interface ScheduledSignal {
   revealAtMs: number | null; // null when the signal was never revealed in the real run — stays "pending" forever here too
 }
 
-function scheduleSignals(signals: SignalWithLifecycle[], tMin: number, spanMs: number): ScheduledSignal[] {
+function scheduleSignals(signals: SignalWithLifecycle[], tMinDet: number, detSpanMs: number): ScheduledSignal[] {
   return signals.map((signal) => {
     const detectedAt = Date.parse(signal.detectedAt);
-    const revealedAt = signal.reveal ? Date.parse(signal.reveal.revealedAt) : null;
+    const appearAtMs = ((detectedAt - tMinDet) / detSpanMs) * (APPEAR_WINDOW * ANIMATION_DURATION_MS);
     return {
       signal,
-      appearAtMs: ((detectedAt - tMin) / spanMs) * ANIMATION_DURATION_MS,
-      revealAtMs: revealedAt !== null ? ((revealedAt - tMin) / spanMs) * ANIMATION_DURATION_MS : null,
+      appearAtMs,
+      revealAtMs: signal.reveal ? Math.min(appearAtMs + REVEAL_LAG_MS, ANIMATION_DURATION_MS) : null,
     };
   });
 }
@@ -85,8 +98,11 @@ export function useReplayAnimation(fullSignalsByAgent: Record<AgentId, SignalWit
   const scheduled = useMemo(() => {
     if (!hasHistory) return {} as Record<AgentId, ScheduledSignal[]>;
     const all = AGENT_IDS.flatMap((id) => committedByAgent[id] ?? []);
+    // Normalise over the real DETECTION window only (not detection→reveal) so
+    // commits keep their real cadence and stream across the run — see
+    // scheduleSignals / APPEAR_WINDOW above for why reveals aren't literal.
     const tMin = Math.min(...all.map((s) => Date.parse(s.detectedAt)));
-    const tMax = Math.max(...all.map((s) => (s.reveal ? Date.parse(s.reveal.revealedAt) : Date.parse(s.detectedAt))));
+    const tMax = Math.max(...all.map((s) => Date.parse(s.detectedAt)));
     const spanMs = Math.max(tMax - tMin, 1);
     const result = {} as Record<AgentId, ScheduledSignal[]>;
     for (const id of AGENT_IDS) result[id] = scheduleSignals(committedByAgent[id] ?? [], tMin, spanMs);

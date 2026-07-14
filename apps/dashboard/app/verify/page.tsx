@@ -1,19 +1,18 @@
 import Link from "next/link";
 import { VerifyForm } from "@/components/VerifyForm";
 
-/** The public commit-reveal verification tool (architecture doc section 4.3) — a standalone mini-product, not just a debug screen. */
+/** The public commit-reveal verification tool — a standalone mini-product, not just a debug screen. */
 export default function VerifyPage() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 px-6 py-16">
-      <Link href="/" className="text-sm text-ink-muted hover:text-ink">
-        ← back
+    <main className="mx-auto flex min-h-screen w-full max-w-[640px] flex-col gap-6 px-4 py-14">
+      <Link href="/" className="text-[9px] text-muted hover:text-ink">
+        ← BACK TO THE ARENA
       </Link>
-      <div>
-        <h1 className="font-serif text-3xl text-ink">Verify a proof</h1>
-        <p className="mt-2 text-sm text-ink-secondary">
-          Paste the commit and reveal transaction signatures — any pair generated with the Sentinel Arena memo format, not just the
-          ones our own two agents produced — and we confirm the proof on-chain: hashes matching, correct reference, and the commit
-          published before the reveal.
+      <div className="flex flex-col gap-4">
+        <h1 className="arc-wordmark text-[20px] tracking-[2px] text-ink">VERIFY A PROOF</h1>
+        <p className="text-[8px] leading-loose text-muted">
+          PASTE THE COMMIT AND REVEAL TX SIGNATURES — ANY PAIR USING THE SENTINEL ARENA MEMO FORMAT, NOT JUST THE ONES OUR OWN TWO
+          AGENTS PRODUCED. WE CONFIRM ON-CHAIN: HASHES MATCH, CORRECT REFERENCE, AND THE COMMIT PUBLISHED BEFORE THE REVEAL.
         </p>
       </div>
       <VerifyForm />

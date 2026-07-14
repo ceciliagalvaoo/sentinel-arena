@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import type { TrackedFixtureRow } from "@/lib/types";
-import { StatusDot } from "./StatusDot";
+import { drawMiniSquirrel } from "@/lib/arena-engine";
+import { flagKeyForTeam, paintFlag } from "@/lib/flags";
 import { TutorialModal } from "./TutorialModal";
 
 export type Mode = "live" | "replay";
@@ -18,141 +20,137 @@ interface HeaderProps {
 }
 
 /**
- * Live/Replay is a first-class toggle, never a hidden setting (both are
- * legitimate — the judging calendar means most demos happen in replay).
- * The toggle filters which fixtures are selectable: "Live" only offers
- * fixtures currently live, "Replay" offers everything else (scheduled or
- * finished) — never presented as a degraded mode.
- *
- * `mode`/`filteredFixtures` are owned by the page, not local state here —
- * the agent cards below the header need to react to the same filter,
- * otherwise switching to "Live" with no live match only changed the
- * dropdown while the rest of the page kept showing the last selected
- * finished fixture's data.
+ * Arcade header + scoreboard. Wordmark "SENTINEL ARENA" stays the primary
+ * brand; "RUSH 'N SAGE" is the secondary mascot lockup. Nav routes to /
+ * (ARENA) and /verify; HOW TO USE opens the tutorial. The scoreboard carries
+ * the fixture selector, procedural flags, the LIVE/REPLAY toggle, and the
+ * connection status — same mode/fixture semantics the page owns.
  */
-export function Header({ filteredFixtures, selectedFixtureId, onSelectFixture, mode, onModeChange, usingMockData, wsConnected }: HeaderProps) {
+export function Header({
+  filteredFixtures,
+  selectedFixtureId,
+  onSelectFixture,
+  mode,
+  onModeChange,
+  usingMockData,
+  wsConnected,
+}: HeaderProps) {
   const selectedFixture = filteredFixtures.find((f) => f.fixtureId === selectedFixtureId);
   const [tutorialOpen, setTutorialOpen] = useState(false);
 
+  const rushMiniRef = useRef<HTMLCanvasElement>(null);
+  const sageMiniRef = useRef<HTMLCanvasElement>(null);
+  const homeFlagRef = useRef<HTMLCanvasElement>(null);
+  const awayFlagRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (rushMiniRef.current) drawMiniSquirrel(rushMiniRef.current, "rush");
+    if (sageMiniRef.current) drawMiniSquirrel(sageMiniRef.current, "sage");
+  }, []);
+
+  useEffect(() => {
+    if (homeFlagRef.current) paintFlag(homeFlagRef.current, flagKeyForTeam(selectedFixture?.participant1));
+    if (awayFlagRef.current) paintFlag(awayFlagRef.current, flagKeyForTeam(selectedFixture?.participant2));
+  }, [selectedFixture?.participant1, selectedFixture?.participant2]);
+
   return (
-    <header className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-6">
-      <div className="flex items-center gap-2.5">
-        <LogoMark />
-        <div>
-          <h1 className="font-serif text-2xl leading-none text-ink">Sentinel Arena</h1>
-          <p className="text-xs text-ink-muted">Two agents, the same data, verifiable proof</p>
-        </div>
+    <header className="flex w-full flex-col items-center gap-4 text-center">
+      <div className="text-[9px] tracking-[2px] text-accent">TXODDS WORLD CUP HACKATHON</div>
+      <h1 className="arc-wordmark m-0 text-[clamp(16px,5.5vw,26px)] font-normal tracking-[2px] text-ink">SENTINEL ARENA</h1>
+      <div className="text-[9px] leading-loose tracking-[1px] text-muted">TWO AGENTS, THE SAME DATA, VERIFIABLE PROOF</div>
+
+      {/* Rush 'N Sage lockup — secondary mascot mark */}
+      <div className="flex items-center gap-3 bg-panel px-3.5 py-1.5" style={{ boxShadow: "0 3px 0 var(--arc-shadow)" }}>
+        <canvas ref={rushMiniRef} width={14} height={16} className="pixel-art block h-8 w-7" />
+        <span className="text-[10px] tracking-[1px]">
+          <span className="text-rush">RUSH</span>
+          <span className="text-muted"> &apos;N </span>
+          <span className="text-sage">SAGE</span>
+        </span>
+        <canvas ref={sageMiniRef} width={14} height={16} className="pixel-art block h-8 w-7" style={{ transform: "scaleX(-1)" }} />
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          onClick={() => setTutorialOpen(true)}
-          className="flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-ink-secondary transition hover:border-accent hover:text-accent"
-        >
-          <span
-            className="flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold"
-            style={{ backgroundColor: "var(--accent-flash)", color: "var(--accent)" }}
-            aria-hidden
-          >
-            ?
-          </span>
-          How this works
+      <div className="animate-arcblink-fast text-[9px] text-good">● INSERT COIN — PICK A MODE BELOW</div>
+
+      {/* Nav */}
+      <nav className="flex flex-wrap justify-center gap-2.5">
+        <Link href="/" className="arc-btn bg-accent px-4 py-2.5 text-[9px] text-accent-ink">
+          ARENA
+        </Link>
+        <Link href="/verify" className="arc-btn bg-panel-raised px-4 py-2.5 text-[9px] text-ink">
+          VERIFY PROOF
+        </Link>
+        <button type="button" onClick={() => setTutorialOpen(true)} className="arc-btn bg-panel-raised px-4 py-2.5 text-[9px] text-ink">
+          ? HOW TO USE
         </button>
+      </nav>
 
-        {usingMockData ? (
-          <span className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-ink-muted">sample data (mock)</span>
-        ) : (
-          <span className="rounded-full border border-border bg-surface px-3 py-1.5">
-            <StatusDot status={wsConnected ? "active" : "paused"} label={wsConnected ? "connected" : "reconnecting…"} />
-          </span>
-        )}
-
-        <div className="flex items-center rounded-full border border-border bg-surface p-1 text-xs font-medium">
-          <button
-            type="button"
-            onClick={() => onModeChange("live")}
-            className={`rounded-full px-3 py-1.5 transition ${
-              mode === "live" ? "bg-accent text-accent-ink" : "text-ink-secondary hover:text-ink"
-            }`}
-          >
-            <span className="inline-flex items-center gap-1.5">
-              {mode === "live" && <span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-accent-ink" />}
-              Live
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={() => onModeChange("replay")}
-            className={`rounded-full px-3 py-1.5 transition ${
-              mode === "replay" ? "bg-accent text-accent-ink" : "text-ink-secondary hover:text-ink"
-            }`}
-          >
-            Replay
-          </button>
-        </div>
-
+      {/* Scoreboard */}
+      <div className="flex max-w-full flex-wrap items-center justify-center gap-x-4 gap-y-2.5 px-1 py-2 text-[10px]">
         {filteredFixtures.length > 0 ? (
           <select
             value={selectedFixtureId ?? ""}
-            onChange={(event) => onSelectFixture(Number(event.target.value))}
-            className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-ink"
+            onChange={(e) => onSelectFixture(Number(e.target.value))}
+            className="cursor-pointer bg-panel px-2.5 py-2 font-pixel text-[8px] text-ink outline-none"
           >
             {filteredFixtures.map((fixture) => (
               <option key={fixture.fixtureId} value={fixture.fixtureId}>
-                {fixture.participant1} × {fixture.participant2}
-                {fixture.competition ? ` · ${fixture.competition}` : ""}
+                {(fixture.participant1 ?? "TBD").toUpperCase()} × {(fixture.participant2 ?? "TBD").toUpperCase()}
+                {fixture.competition ? ` · ${fixture.competition.toUpperCase()}` : ""}
               </option>
             ))}
           </select>
         ) : (
-          <span className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-ink-muted">
-            {mode === "live" ? "no live match right now" : "no recorded fixture yet"}
+          <span className="bg-panel px-2.5 py-2 text-[8px] text-muted">
+            {mode === "live" ? "NO LIVE MATCH RIGHT NOW" : "NO RECORDED FIXTURE YET"}
           </span>
         )}
 
         {selectedFixture && (
-          <span className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-ink-secondary">
-            status: {selectedFixture.status === "live" ? "live" : selectedFixture.status === "finished" ? "finished" : "scheduled"}
+          <>
+            <canvas ref={homeFlagRef} width={12} height={8} className="pixel-art block h-6 w-9" />
+            <span className="text-ink">{(selectedFixture.participant1 ?? "TBD").toUpperCase()}</span>
+            <span className="text-accent">VS</span>
+            <span className="text-ink">{(selectedFixture.participant2 ?? "TBD").toUpperCase()}</span>
+            <canvas ref={awayFlagRef} width={12} height={8} className="pixel-art block h-6 w-9" />
+          </>
+        )}
+
+        <span className="h-[18px] w-0.5 bg-arcborder" />
+
+        <div className="flex items-center">
+          <button
+            type="button"
+            onClick={() => onModeChange("live")}
+            className={`arc-btn-flat px-3 py-2 text-[8px] ${mode === "live" ? "bg-accent text-accent-ink" : "bg-panel text-muted"}`}
+          >
+            LIVE
+          </button>
+          <button
+            type="button"
+            onClick={() => onModeChange("replay")}
+            className={`arc-btn-flat px-3 py-2 text-[8px] ${mode === "replay" ? "bg-accent text-accent-ink" : "bg-panel text-muted"}`}
+          >
+            REPLAY
+          </button>
+        </div>
+
+        {usingMockData ? (
+          <span className="bg-panel px-2.5 py-2 text-[8px] text-muted">SAMPLE DATA (MOCK)</span>
+        ) : mode === "live" ? (
+          <span className="inline-flex items-center gap-1.5 text-[8px] text-good">
+            <span className="h-1.5 w-1.5 animate-arcblink bg-good" />
+            {wsConnected ? "LISTENING FOR ON-CHAIN COMMITS…" : "RECONNECTING…"}
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 text-[8px] text-muted">
+            <span className={`h-1.5 w-1.5 ${wsConnected ? "bg-good" : "bg-muted"}`} />
+            {wsConnected ? "CONNECTED" : "OFFLINE"}
           </span>
         )}
       </div>
 
       <TutorialModal open={tutorialOpen} onClose={() => setTutorialOpen(false)} />
     </header>
-  );
-}
-
-/**
- * Pixel-art shield-with-a-watching-eye — a sentinel keeping watch, not a
- * generic checkmark. Same blocky-rect grid technique as SquirrelMascot, for
- * visual consistency across the app's icon language.
- */
-const LOGO_GRID = ["011111110", "111111111", "111111111", "110222011", "110222011", "111111111", "011111110", "001111100", "000111000"];
-
-function LogoMark() {
-  const unit = 2.6;
-  const offsetX = 4;
-  const offsetY = 3.5;
-  return (
-    <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden>
-      <rect x="1" y="1" width="30" height="30" rx="9" fill="var(--accent)" />
-      {LOGO_GRID.flatMap((row, y) =>
-        row.split("").map((cell, x) => {
-          if (cell === "0") return null;
-          const fill = cell === "2" ? "var(--accent)" : "var(--accent-ink)";
-          return (
-            <rect
-              key={`${x}-${y}`}
-              x={offsetX + x * unit}
-              y={offsetY + y * unit}
-              width={unit}
-              height={unit}
-              fill={fill}
-            />
-          );
-        }),
-      )}
-    </svg>
   );
 }

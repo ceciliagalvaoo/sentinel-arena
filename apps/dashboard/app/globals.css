@@ -2,133 +2,176 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Self-hosted Press Start 2P (the arcade theme's only typeface). Declared as a
+   plain @font-face with a STABLE family name — deliberately NOT next/font,
+   because the app draws pixel text on <canvas> (arena labels, chart axes) via
+   ctx.font = '…"Press Start 2P"', which needs a real, predictable family name
+   (next/font would hash it). No runtime Google Fonts request; works offline.
+   The ttf lives in public/fonts and is served at /fonts/…. */
+@font-face {
+  font-family: "Press Start 2P";
+  src: url("/fonts/PressStart2P.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ============================================================
+   SENTINEL ARENA — ARCADE DESIGN TOKENS (dark-only)
+   Ported from the approved design (rush-n-sage-design/css/tokens.css).
+   There is NO light mode: no @media (prefers-color-scheme), no
+   [data-theme] overrides, no theme toggle. One theme, one source.
+   Tailwind roles in tailwind.config.ts reference these vars.
+   ============================================================ */
 :root {
-  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-serif: ui-serif, Georgia, "Iowan Old Style", serif;
-  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", monospace;
+  /* one typeface — the @font-face above; matched by name in CSS and in ctx.font */
+  --font-pixel: "Press Start 2P", ui-monospace, monospace;
 
-  /* Warm-neutral chrome — validated via the dataviz skill's reference palette */
-  --page: #f9f9f7;
-  --surface: #fcfcfb;
-  --surface-raised: #ffffff;
-  --border: rgba(11, 11, 11, 0.1);
-  --ink: #0b0b0b;
-  --ink-secondary: #52514e;
-  --ink-muted: #898781;
+  /* surfaces (graphite) */
+  --arc-bg: #232327; /* page background — also painted inside the canvases so the scene/chart read as borderless */
+  --arc-bg-deep: #1d1d22; /* dark wells: progress-bar track, verify inputs */
+  --arc-panel: #2b2b31; /* neutral surfaces: fixture select, secondary buttons */
+  --arc-panel-soft: #27272c; /* agent cards / verify form — differentiated by tint only, no border */
+  --arc-panel-row: #1f1f24; /* event-feed rows */
+  --arc-panel-raised: #34343c; /* neutral buttons (bevel via inset box-shadow) */
+  --arc-border: #3f3f48; /* rare dividers (the theme barely uses borders) */
+  --arc-shadow: #17171a; /* hard button shadow: 0 4px 0 */
 
-  /* Brand accent: a deep indigo-violet — deliberately its own hue family,
-     separate from Agent-Aggressive's warm red-orange, so the app's chrome
-     (logo, links, active states) never reads as "the same orange every AI
-     product uses." Text contrast checked with the dataviz skill's
-     validator: #fffaf5-on-#5B3FD1 = 6.58:1 (WCAG AA target 4.5:1). */
-  --accent: #5b3fd1;
-  --accent-ink: #fffaf5;
+  /* ink */
+  --arc-ink: #e8e6df;
+  --arc-ink-soft: #c3c2b7;
+  --arc-muted: #8f8f98;
 
-  /* Agent identity pair — validated categorical pair, CVD ΔE 90+ vs.
-     conservative (dataviz skill run). Aggressive shifted to a hotter,
-     more red coral-orange than the original burnt-terracotta shade. */
-  --aggressive: #e5502f;
-  --aggressive-soft: #fceae6;
-  --conservative: #2a78d6;
-  --conservative-soft: #dfeaf9;
+  /* agent identity */
+  --rush: #e0392b; /* Rush = coral-red (aggressive) */
+  --rush-dark: #9c221c;
+  --sage: #f59e1b; /* Sage = orange (conservative) */
+  --sage-dark: #b06a10;
 
-  --good: #0ca30c;
-  --warning: #fab219;
-  --serious: #ec835a;
-  --critical: #d03b3b;
-
-  /* Mascot-only decorative shades (not categorical series — no validator needed) */
-  --aggressive-dark: #b74026;
-  --conservative-dark: #1c5aa8;
-  --mascot-belly: #fdf1e2;
-  --mascot-eye: #1c1410;
-
-  /* Feed row "something just changed" flash */
-  --accent-flash: rgba(91, 63, 209, 0.14);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --page: #0d0d0d;
-    --surface: #1a1a19;
-    --surface-raised: #232321;
-    --border: rgba(255, 255, 255, 0.1);
-    --ink: #ffffff;
-    --ink-secondary: #c3c2b7;
-    --ink-muted: #898781;
-
-    /* Dark mode flips to a lighter lavender + dark ink text (rather than a
-       darker violet + white text) — the darker violet couldn't clear 4.5:1
-       for white text without going muddy against the near-black page. */
-    --accent: #9c86f0;
-    --accent-ink: #1a1030;
-
-    --aggressive: #d6431f;
-    --aggressive-soft: #3d2016;
-    --conservative: #3987e5;
-    --conservative-soft: #182a3d;
-
-    --aggressive-dark: #a83a1a;
-    --conservative-dark: #2a6bc4;
-    --mascot-belly: #f2e2c8;
-    --mascot-eye: #14100d;
-
-    --accent-flash: rgba(156, 134, 240, 0.2);
-  }
-}
-
-/* Manual override hook for a future theme toggle — wins in both directions */
-:root[data-theme="light"] {
-  --page: #f9f9f7;
-  --surface: #fcfcfb;
-  --surface-raised: #ffffff;
-  --border: rgba(11, 11, 11, 0.1);
-  --ink: #0b0b0b;
-  --ink-secondary: #52514e;
-  --ink-muted: #898781;
-  --accent: #5b3fd1;
-  --accent-ink: #fffaf5;
-  --aggressive: #e5502f;
-  --aggressive-soft: #fceae6;
-  --conservative: #2a78d6;
-  --conservative-soft: #dfeaf9;
-}
-
-:root[data-theme="dark"] {
-  --page: #0d0d0d;
-  --surface: #1a1a19;
-  --surface-raised: #232321;
-  --border: rgba(255, 255, 255, 0.1);
-  --ink: #ffffff;
-  --ink-secondary: #c3c2b7;
-  --ink-muted: #898781;
-  --accent: #9c86f0;
+  /* brand */
+  --accent: #9c86f0; /* indigo-violet: active tabs, primary buttons, VS */
   --accent-ink: #1a1030;
-  --aggressive: #d6431f;
-  --aggressive-soft: #3d2016;
-  --conservative: #3987e5;
-  --conservative-soft: #182a3d;
+
+  /* states */
+  --good: #5fd068; /* verified / correct / RUN */
+  --warn: #f59e1b; /* pending (shares Sage's orange, intentional) */
+  --bad: #e0392b; /* wrong (shares Rush's coral, intentional) */
+
+  /* mascot pixels */
+  --belly: #fdf1e2;
+  --eye: #1c1410;
+
+  /* scene */
+  --scene-ground: #2c2c33;
+  --scene-ground-line: #4a4a54;
+  --tree: #4e9e57;
+  --tree-dark: #357040;
+  --trunk: #6b4a2f;
 }
 
+* {
+  box-sizing: border-box;
+}
+html,
 body {
-  background-color: var(--page);
-  color: var(--ink);
-  font-family: var(--font-sans);
+  margin: 0;
+  padding: 0;
+}
+body {
+  background-color: var(--arc-bg);
+  color: var(--arc-ink);
+  font-family: var(--font-pixel);
+  /* pixel look: kill sub-pixel smoothing */
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  color: #c4b5fd;
 }
 
 ::selection {
-  background-color: var(--aggressive-soft);
-  color: var(--ink);
+  background-color: var(--rush-dark);
+  color: var(--arc-ink);
 }
 
-/* Pixel-art mascots: keep hard edges at small sizes, never blur on scale.
-   width/height fill whatever box wraps the <svg> (it has no intrinsic
-   pixel size of its own — only a viewBox) so every call site controls the
-   rendered size purely via its container, never a hardcoded scale factor
-   that only happened to look right in one place. */
+/* Pixel-art canvases/sprites: never blur on scale. */
 .pixel-art {
   image-rendering: pixelated;
   shape-rendering: crispEdges;
-  width: 100%;
-  height: 100%;
+}
+
+/* ---------- arcade primitives (reused across Header / Verify / Modal) ---------- */
+
+/* Beveled push-button: inset highlight + inset shadow + a hard drop shadow that
+   collapses on :active so the button visibly presses down. */
+.arc-btn {
+  font-family: var(--font-pixel);
+  border: 0;
+  cursor: pointer;
+  box-shadow: inset -3px -3px 0 rgba(0, 0, 0, 0.35), inset 3px 3px 0 rgba(255, 255, 255, 0.15), 0 4px 0 var(--arc-shadow);
+  transition: filter 0.1s;
+}
+.arc-btn:hover {
+  filter: brightness(1.12);
+}
+.arc-btn:active {
+  transform: translateY(3px);
+  box-shadow: inset -3px -3px 0 rgba(0, 0, 0, 0.35), inset 3px 3px 0 rgba(255, 255, 255, 0.15), 0 1px 0 var(--arc-shadow);
+}
+.arc-btn-sm {
+  font-family: var(--font-pixel);
+  border: 0;
+  cursor: pointer;
+  box-shadow: inset -2px -2px 0 rgba(0, 0, 0, 0.35), inset 2px 2px 0 rgba(255, 255, 255, 0.25), 0 3px 0 var(--arc-shadow);
+  transition: filter 0.1s;
+}
+.arc-btn-sm:hover {
+  filter: brightness(1.12);
+}
+.arc-btn-sm:active {
+  transform: translateY(2px);
+  box-shadow: inset -2px -2px 0 rgba(0, 0, 0, 0.35), inset 2px 2px 0 rgba(255, 255, 255, 0.25), 0 1px 0 var(--arc-shadow);
+}
+
+/* Flat button (no drop shadow) — used for the tab-style Live/Replay toggle. */
+.arc-btn-flat {
+  font-family: var(--font-pixel);
+  border: 0;
+  cursor: pointer;
+  transition: filter 0.1s;
+}
+.arc-btn-flat:hover {
+  filter: brightness(1.1);
+}
+.arc-btn-flat:active {
+  transform: translateY(2px);
+}
+
+/* Chunky drop-shadowed wordmark (SENTINEL ARENA). */
+.arc-wordmark {
+  text-shadow: 3px 3px 0 var(--rush-dark), 6px 6px 0 var(--arc-shadow);
+}
+
+/* Hard-blink used by "INSERT COIN", "VERIFY PENDING…", LIVE dot — step-end so
+   it snaps on/off like a CRT indicator instead of fading. */
+@keyframes arcblink {
+  0%,
+  55% {
+    opacity: 1;
+  }
+  56%,
+  100% {
+    opacity: 0;
+  }
+}
+.animate-arcblink {
+  animation: arcblink 1.6s step-end infinite;
+}
+.animate-arcblink-fast {
+  animation: arcblink 1.2s step-end infinite;
 }

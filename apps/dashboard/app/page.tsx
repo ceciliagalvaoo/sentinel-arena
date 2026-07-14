@@ -2,13 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Header, type Mode } from "@/components/Header";
+import { ArenaScene } from "@/components/ArenaScene";
 import { AgentCard } from "@/components/AgentCard";
 import { ComparisonChart } from "@/components/ComparisonChart";
 import { Footer } from "@/components/Footer";
 import { useSentinelData } from "@/lib/use-sentinel-data";
 import { useFullSignals } from "@/lib/use-full-signals";
 import { useReplayAnimation } from "@/lib/use-replay-animation";
-import { buildComparisonSeries } from "@/lib/accuracy-series";
 import { mockAgentCards } from "@/lib/mock-data";
 import type { AgentId, SignalWithLifecycle } from "@/lib/types";
 
@@ -22,33 +22,37 @@ export default function DashboardPage() {
     [fixtures, mode],
   );
 
-  // Same filter the header's dropdown uses — if the currently selected
-  // fixture doesn't belong to this mode (e.g. it's finished, but the user
-  // just switched to "Live"), there is nothing to show: never fall back
-  // to displaying a stale, unrelated fixture's data.
   const selectedFixture = filteredFixtures.find((f) => f.fixtureId === selectedFixtureId) ?? null;
 
-  // When switching modes (or once fixtures load), snap the selection to the
-  // first fixture that's actually valid in the new mode, so the dropdown and
-  // the cards below never disagree about what's selected.
+  // Snap the selection to a fixture valid in the current mode so the dropdown
+  // and the cards below never disagree about what's selected.
   useEffect(() => {
     if (filteredFixtures.length === 0) return;
     if (filteredFixtures.some((f) => f.fixtureId === selectedFixtureId)) return;
     setSelectedFixtureId(filteredFixtures[0]!.fixtureId);
   }, [mode, filteredFixtures, selectedFixtureId, setSelectedFixtureId]);
 
-  // A finished fixture doesn't keep producing new events on its own — without
-  // this, a judge opening the dashboard after the agents already stopped
-  // would just see a frozen final state. In replay mode against a finished
-  // fixture, replay the real (already on-chain) history as an animation
-  // instead of showing it all at once — see use-replay-animation.ts.
+  // A finished fixture stops producing events — replay its real (already
+  // on-chain) history as a timed animation so there's always something to watch.
   const isReplayShowcase = mode === "replay" && selectedFixture !== null && selectedFixture.status === "finished";
 
-  const { fullSignals } = useFullSignals(usingMockData ? null : (selectedFixture?.fixtureId ?? null), isReplayShowcase && !usingMockData);
+  const { fullSignals } = useFullSignals(usingMockData ? null : selectedFixture?.fixtureId ?? null, isReplayShowcase && !usingMockData);
 
-  const showcaseSource: Record<AgentId, SignalWithLifecycle[]> = usingMockData
-    ? { "agent-aggressive": mockAgentCards["agent-aggressive"].recentSignals, "agent-conservative": mockAgentCards["agent-conservative"].recentSignals }
-    : fullSignals;
+  // MUST be memoized: this is the input to useReplayAnimation, whose internal
+  // scheduling memos (and the effect that drives elapsed time) key off its
+  // identity. A fresh object every render would reset the replay to t=0 on
+  // every render — which silently breaks playback AND "skip to end" (the skip
+  // sets the clock to the end, the next render's new object resets it to 0).
+  const showcaseSource = useMemo<Record<AgentId, SignalWithLifecycle[]>>(
+    () =>
+      usingMockData
+        ? {
+            "agent-aggressive": mockAgentCards["agent-aggressive"].recentSignals,
+            "agent-conservative": mockAgentCards["agent-conservative"].recentSignals,
+          }
+        : fullSignals,
+    [usingMockData, fullSignals],
+  );
 
   const replay = useReplayAnimation(showcaseSource, isReplayShowcase);
 
@@ -59,13 +63,15 @@ export default function DashboardPage() {
     ? { ...agentCards["agent-conservative"], recentSignals: replay.visibleSignals["agent-conservative"], accuracy: replay.accuracy["agent-conservative"] }
     : agentCards["agent-conservative"];
 
-  const comparisonData = buildComparisonSeries({
-    "agent-aggressive": aggressiveCard.recentSignals,
-    "agent-conservative": conservativeCard.recentSignals,
-  });
+  // Rush = aggressive, Sage = conservative.
+  const rushSignals = aggressiveCard.recentSignals;
+  const sageSignals = conservativeCard.recentSignals;
+
+  // The KO fires once the replay showcase finishes (the winner throws the punch).
+  const koTrigger = isReplayShowcase && replay.hasHistory && replay.isComplete;
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-8 px-6 py-8">
+    <main className="mx-auto flex min-h-screen w-full max-w-[960px] flex-col items-center gap-6 px-3 pb-16 pt-7">
       <Header
         filteredFixtures={filteredFixtures}
         selectedFixtureId={selectedFixtureId}
@@ -77,78 +83,76 @@ export default function DashboardPage() {
       />
 
       {selectedFixture && selectedFixture.status === "finished" && !selectedFixture.capturedLive && (
-        <div className="rounded-xl2 border border-dashed border-border bg-surface px-4 py-2.5 text-center text-xs text-ink-muted">
-          This match's data was reconstructed from TxLINE's historical record after the fact, not captured live tick-by-tick —
-          every hash and result below is real and on-chain, but the timestamps shown reflect when we processed this replay, not
-          the original match time.
+        <div className="w-full max-w-[920px] bg-panel-row px-4 py-2.5 text-center text-[8px] leading-loose text-muted">
+          THIS MATCH&apos;S DATA WAS RECONSTRUCTED FROM TXLINE&apos;S HISTORICAL RECORD AFTER THE FACT, NOT CAPTURED LIVE TICK-BY-TICK —
+          EVERY HASH AND RESULT BELOW IS REAL AND ON-CHAIN, BUT THE TIMESTAMPS REFLECT WHEN WE PROCESSED THIS REPLAY.
         </div>
       )}
 
       {isReplayShowcase && replay.hasHistory && (
-        <div className="flex items-center justify-center gap-3 rounded-xl2 border border-border bg-surface px-4 py-3 text-xs text-ink-secondary">
+        <div className="flex w-full max-w-[920px] flex-wrap items-center justify-center gap-3 bg-panel-row px-4 py-3 text-[8px] text-ink-soft">
           {replay.isComplete ? (
             <>
-              <span>Replay complete — this match's entire real history is now on screen.</span>
-              <button
-                type="button"
-                onClick={replay.restart}
-                className="rounded-full border border-border bg-surface-raised px-3 py-1.5 font-medium text-ink transition hover:bg-accent hover:text-accent-ink"
-              >
-                ▶ watch again
+              <span>REPLAY COMPLETE — THIS MATCH&apos;S ENTIRE REAL HISTORY IS ON SCREEN.</span>
+              <button type="button" onClick={replay.restart} className="arc-btn-sm bg-good px-2.5 py-2 text-[8px] text-bg-deep">
+                ▶ WATCH AGAIN
               </button>
             </>
           ) : (
             <>
               <span className="inline-flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-accent" />
-                Replaying this match's real history — the hashes and results already happened on-chain.
+                <span className="h-1.5 w-1.5 animate-arcblink bg-accent" />
+                REPLAYING THIS MATCH&apos;S REAL HISTORY — THE HASHES AND RESULTS ALREADY HAPPENED ON-CHAIN.
               </span>
-              <button
-                type="button"
-                onClick={replay.skipToEnd}
-                className="rounded-full border border-border bg-surface-raised px-3 py-1.5 font-medium text-ink transition hover:bg-accent hover:text-accent-ink"
-              >
-                skip to the end →
+              <button type="button" onClick={replay.skipToEnd} className="arc-btn-sm bg-accent px-2.5 py-2 text-[8px] text-accent-ink">
+                ⏭ SKIP TO END
               </button>
             </>
           )}
         </div>
       )}
 
+      {/* The arena is always on screen — idle squirrels when there's nothing to react to. */}
+      <ArenaScene
+        rushSignals={rushSignals}
+        sageSignals={sageSignals}
+        rushAccuracy={aggressiveCard.accuracy.accuracy}
+        sageAccuracy={conservativeCard.accuracy.accuracy}
+        koTrigger={koTrigger}
+      />
+
       {loading ? (
-        <p className="text-sm text-ink-muted">Loading…</p>
+        <p className="text-[9px] text-muted">LOADING…</p>
       ) : !selectedFixture ? (
-        <div className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-surface py-16 text-center">
-          <span className="h-2 w-2 animate-pulse-dot rounded-full bg-ink-muted" />
-          <p className="text-sm text-ink-secondary">
-            {mode === "live" ? "No live match right now." : "No recorded fixture for replay yet."}
-          </p>
-          <p className="text-xs text-ink-muted">
-            {mode === "live" ? "The agents keep listening to the stream — as soon as a match starts, it shows up here." : "Record a fixture with scripts/seed-replay-data.ts."}
+        <div className="flex w-full max-w-[920px] flex-col items-center gap-2 bg-panel-soft py-14 text-center">
+          <span className="h-2 w-2 animate-arcblink bg-muted" />
+          <p className="text-[9px] text-ink-soft">{mode === "live" ? "NO LIVE MATCH RIGHT NOW." : "NO RECORDED FIXTURE FOR REPLAY YET."}</p>
+          <p className="text-[8px] text-muted">
+            {mode === "live" ? "THE AGENTS KEEP LISTENING — A MATCH SHOWS UP HERE AS SOON AS IT STARTS." : "RECORD A FIXTURE WITH scripts/seed-replay-data.ts."}
           </p>
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <section className="grid w-full max-w-[920px] grid-cols-1 gap-4 md:grid-cols-2">
             <AgentCard
               data={aggressiveCard}
-              variant="aggressive"
-              displayName="Agent-Aggressive"
-              tagline="k=1.5 · reacts fast to any move"
-              participant1={selectedFixture?.participant1}
-              participant2={selectedFixture?.participant2}
+              variant="rush"
+              displayName="RUSH"
+              tagline="THE AGGRESSIVE AGENT · k=1.5 · REACTS FAST TO ANY MOVE"
+              participant1={selectedFixture.participant1}
+              participant2={selectedFixture.participant2}
             />
             <AgentCard
               data={conservativeCard}
-              variant="conservative"
-              displayName="Agent-Conservative"
-              tagline="k=3.0 · only moves on strong signals"
-              participant1={selectedFixture?.participant1}
-              participant2={selectedFixture?.participant2}
+              variant="sage"
+              displayName="SAGE"
+              tagline="THE CONSERVATIVE AGENT · k=3.0 · ONLY MOVES ON STRONG SIGNALS"
+              participant1={selectedFixture.participant1}
+              participant2={selectedFixture.participant2}
             />
-          </div>
+          </section>
 
-          <ComparisonChart data={comparisonData} />
+          <ComparisonChart rushSignals={rushSignals} sageSignals={sageSignals} />
         </>
       )}
 
