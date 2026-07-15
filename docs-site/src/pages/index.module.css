@@ -157,3 +157,50 @@
   color: var(--ifm-color-emphasis-700);
   font-size: 0.95rem;
 }
+
+.teamRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 3rem;
+  margin: 1.25rem 0 3.5rem;
+}
+
+.teamCard {
+  text-align: center;
+}
+
+.teamPhotoWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.teamPhoto {
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.teamSquirrel {
+  height: 48px;
+  image-rendering: pixelated;
+}
+
+.teamName {
+  margin: 0.6rem 0 0;
+  font-weight: 700;
+}
+
+.teamRole {
+  margin: 0 0 0.4rem;
+  font-size: 0.85rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.teamLinks {
+  margin: 0;
+  font-size: 0.9rem;
+}

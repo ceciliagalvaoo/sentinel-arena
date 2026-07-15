@@ -108,16 +108,6 @@ See the **[judging documentation](./docs/README.md)** for the full criterion-by-
 <table>
   <tr>
     <td align="center" width="50%">
-      <img src="docs/img/Team/Pablo.png" width="150" alt="Pablo Azevedo" />
-      <img src="docs/img/sage.gif" height="52" alt="Sage" />
-      <br/>
-      <b>Pablo Azevedo</b><br/>
-      <sub>Full-Stack · Frontend · Product</sub>
-      <br/><br/>
-      <a href="https://www.linkedin.com/in/pabloazevedo"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" /></a>
-      <a href="https://github.com/zzaved"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" /></a>
-    </td>
-    <td align="center" width="50%">
       <img src="docs/img/Team/Cecilia.png" width="150" alt="Cecília Galvão" />
       <img src="docs/img/rush.gif" height="52" alt="Rush" />
       <br/>
@@ -126,6 +116,16 @@ See the **[judging documentation](./docs/README.md)** for the full criterion-by-
       <br/><br/>
       <a href="https://www.linkedin.com/in/ceciliagalvaoo/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" /></a>
       <a href="https://github.com/ceciliagalvaoo"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" /></a>
+    </td>
+    <td align="center" width="50%">
+      <img src="docs/img/Team/Pablo.png" width="150" alt="Pablo Azevedo" />
+      <img src="docs/img/sage.gif" height="52" alt="Sage" />
+      <br/>
+      <b>Pablo Azevedo</b><br/>
+      <sub>Full-Stack · Frontend · Product</sub>
+      <br/><br/>
+      <a href="https://www.linkedin.com/in/pabloazevedo"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" /></a>
+      <a href="https://github.com/zzaved"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" /></a>
     </td>
   </tr>
 </table>

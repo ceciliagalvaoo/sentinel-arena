@@ -15,6 +15,44 @@ const SECTIONS = [
   { title: "Reference", to: "/txline-feedback-log", description: "The TxLINE API feedback log kept since day one, and what comes after the hackathon." },
 ];
 
+// Cecília always before Pablo. Squirrel colour matches each photo's background.
+const TEAM = [
+  {
+    name: "Cecília Galvão",
+    role: "Agents · Backend · Blockchain",
+    photo: "/img/team/Cecilia.png",
+    squirrel: "/img/judging/rush.gif",
+    linkedin: "https://www.linkedin.com/in/ceciliagalvaoo/",
+    github: "https://github.com/ceciliagalvaoo",
+  },
+  {
+    name: "Pablo Azevedo",
+    role: "Full-Stack · Frontend · Product",
+    photo: "/img/team/Pablo.png",
+    squirrel: "/img/judging/sage.gif",
+    linkedin: "https://www.linkedin.com/in/pabloazevedo",
+    github: "https://github.com/zzaved",
+  },
+];
+
+function TeamMember({ member }: { member: (typeof TEAM)[number] }) {
+  const photo = useBaseUrl(member.photo);
+  const squirrel = useBaseUrl(member.squirrel);
+  return (
+    <div className={styles.teamCard}>
+      <div className={styles.teamPhotoWrap}>
+        <img src={photo} alt={member.name} className={styles.teamPhoto} />
+        <img src={squirrel} alt="" className={styles.teamSquirrel} />
+      </div>
+      <p className={styles.teamName}>{member.name}</p>
+      <p className={styles.teamRole}>{member.role}</p>
+      <p className={styles.teamLinks}>
+        <a href={member.linkedin}>LinkedIn</a> · <a href={member.github}>GitHub</a>
+      </p>
+    </div>
+  );
+}
+
 function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext();
   const rushGif = useBaseUrl("/img/judging/rush.gif");
@@ -88,6 +126,13 @@ export default function Home(): ReactNode {
               <h3>{s.title}</h3>
               <p>{s.description}</p>
             </Link>
+          ))}
+        </div>
+
+        <h2 className={styles.startHere}>Team</h2>
+        <div className={styles.teamRow}>
+          {TEAM.map((m) => (
+            <TeamMember key={m.name} member={m} />
           ))}
         </div>
       </main>
