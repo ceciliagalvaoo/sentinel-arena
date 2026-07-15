@@ -59,3 +59,8 @@ flowchart LR
 - **Independent proof verifier:** [/verify](https://sentinel-dashboard-fq9r.onrender.com/verify)
 
 Built for the TxODDS World Cup Hackathon by **Pablo Azevedo** and **Cecília Galvão**.
+
+
+<div style={{textAlign:'center',margin:'2.2rem 0 0.5rem',opacity:0.9}}>
+  <img src={require('@site/static/img/squirrels/sage-idle.gif').default} alt="" style={{height:'38px'}} />
+</div>

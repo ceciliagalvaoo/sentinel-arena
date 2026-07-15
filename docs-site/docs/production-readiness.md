@@ -31,3 +31,8 @@ Every item below was a genuine defect found while testing against live devnet tr
 - **The settle tail scales with signal volume.** During the live France × Spain semifinal, the aggressive agent committed **~6,400 signals**; because each reveal is its own paced on-chain transaction, draining that backlog after the whistle took roughly 3.5 hours, all unattended. It completes on its own, but batching reveals is the first hardening step we'd take for higher throughput.
 
 None of these were caught by code review alone. Every one surfaced by actually running the system against real infrastructure, then fixing what broke and re-verifying against real data again.
+
+
+<div style={{textAlign:'center',margin:'2.2rem 0 0.5rem',opacity:0.9}}>
+  <img src={require('@site/static/img/squirrels/rush-hop.gif').default} alt="" style={{height:'38px'}} />
+</div>

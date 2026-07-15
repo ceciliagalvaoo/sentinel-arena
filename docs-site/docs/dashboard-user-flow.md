@@ -47,3 +47,8 @@ Warm neutral surfaces (cream/off-white in light mode, warm graphite in dark mode
 ## Why "accuracy" often reads under 50%
 
 Covered in full in [The Agents](/agents#why-the-raw-accuracy--number-looks-lower-than-50), and explained directly to a first-time viewer inside the dashboard's own tutorial: each agent tracks three markets per match simultaneously, and only one can be correct once the match ends, so the statistical floor from chance alone is closer to 33% than 50%.
+
+
+<div style={{textAlign:'center',margin:'2.2rem 0 0.5rem',opacity:0.9}}>
+  <img src={require('@site/static/img/squirrels/sage-eat.gif').default} alt="" style={{height:'38px'}} />
+</div>

@@ -62,3 +62,8 @@ These are drawn from this project's development log, every entry below is a genu
 - **`validateOdds` has a stricter timestamp requirement than `validateStatV2`.** For scores, the `ts` argument is the batch summary's `minTimestamp`. For odds, it must be **exactly** the individual tick's own `ts`, using the batch minimum fails on-chain with `AnchorError: TimestampMismatch`. Not documented anywhere; only found by testing against devnet directly.
 
 For the full, dated log (a required submission deliverable), see [TxLINE API Feedback Log](/txline-feedback-log).
+
+
+<div style={{textAlign:'center',margin:'2.2rem 0 0.5rem',opacity:0.9}}>
+  <img src={require('@site/static/img/squirrels/rush-eat.gif').default} alt="" style={{height:'38px'}} />
+</div>

@@ -183,3 +183,8 @@ Three inexpensive guardrails, present from day one rather than bolted on:
 ## Self-healing: orphaned signal reconciliation
 
 If a process crashes between creating a `signals` row and publishing its `commits` row, the idempotency guard means that exact detection can never fire again, without reconciliation, it would be stuck forever. On every `start()`, `AgentLoop` finds these orphans and republishes their commit using the already-frozen payload hash, **but only for fixtures not yet graded**. A commit published after the result is already knowable would be dishonest, so those cases are logged as unrecoverable instead of silently "fixed." Both paths were validated against real crash artifacts produced during this project's own testing, not synthetic data.
+
+
+<div style={{textAlign:'center',margin:'2.2rem 0 0.5rem',opacity:0.9}}>
+  <img src={require('@site/static/img/squirrels/sage-eat.gif').default} alt="" style={{height:'38px'}} />
+</div>

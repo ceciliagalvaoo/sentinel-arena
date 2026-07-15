@@ -95,3 +95,8 @@ Skipping Docker here also means the agent's own runtime footprint is smaller on 
 ## What depends on what
 
 The signal pipeline, detect → commit → wait → reveal → grade, runs entirely between the Oracle VMs, TxLINE, Solana devnet, and Supabase. Render never appears in that path at all. Concretely: if `backend-api` and `dashboard` were both asleep for a week straight, the two agents would keep committing and revealing signals against real matches without missing a beat, the only consequence of Render being asleep is that a human has to wait a bit longer the next time they open the dashboard link, never a gap in the actual track record.
+
+
+<div style={{textAlign:'center',margin:'2.2rem 0 0.5rem',opacity:0.9}}>
+  <img src={require('@site/static/img/squirrels/rush-idle.gif').default} alt="" style={{height:'38px'}} />
+</div>

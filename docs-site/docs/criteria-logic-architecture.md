@@ -116,3 +116,8 @@ A judge glancing at ~40% accuracy might frown. Each agent tracks **three outcome
 The decision rule is a **single, transparent formula** with exactly one human input, and that input is a declared strategy choice rather than a mystery constant. The rule is **deterministic**, calibrated once and never silently changed, and **auditable** down to the triggering tick via an on-chain, recomputable record. The architecture makes the logic **shared, thin, and seam-clean**. You can explain why the robot did each thing, because the robot wrote down its reasoning and signed it.
 
 *Previous: [← 2 · Autonomous Operation](./criteria-autonomous-operation.md) · Next: [4 · Innovation & Novelty →](./criteria-innovation.md)*
+
+
+<div style={{textAlign:'center',margin:'2.2rem 0 0.5rem',opacity:0.9}}>
+  <img src={require('@site/static/img/squirrels/sage-idle.gif').default} alt="" style={{height:'38px'}} />
+</div>

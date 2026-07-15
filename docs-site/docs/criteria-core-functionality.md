@@ -90,3 +90,8 @@ Working against a live, in-development feed surfaced real integration lessons (s
 The robot **runs stably on the real feed**, proven on a live World Cup match; it **handles the messy realities** of a sports stream by design rather than by luck; and it exposes the exact same code path in **Replay** so the behaviour is reproducible for any judge, at any time, at no cost. The data ingestion is not a demo prop. It is the load-bearing floor of the whole product.
 
 *Next: [2 · Autonomous Operation →](./criteria-autonomous-operation.md)*
+
+
+<div style={{textAlign:'center',margin:'2.2rem 0 0.5rem',opacity:0.9}}>
+  <img src={require('@site/static/img/squirrels/sage-hop.gif').default} alt="" style={{height:'38px'}} />
+</div>

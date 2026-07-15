@@ -78,3 +78,8 @@ The agents run **24/7 on a free-tier Google Cloud `e2-micro` VM**, launched with
 Our answer is a real, observed run: **an entire World Cup match, kickoff, play, final whistle, thousands of on-chain reveals, and settlement into a permanent record, completed with nobody touching anything.** The loop needs no human to advance, the dashboard is structurally incapable of acting for the agents, and the system heals its own crashes, guards its own wallet, and paces its own transactions so that "unattended" holds through real-world turbulence, not just a calm demo.
 
 *Previous: [← 1 · Core Functionality](./criteria-core-functionality.md) · Next: [3 · Logic & Architecture →](./criteria-logic-architecture.md)*
+
+
+<div style={{textAlign:'center',margin:'2.2rem 0 0.5rem',opacity:0.9}}>
+  <img src={require('@site/static/img/squirrels/rush-idle.gif').default} alt="" style={{height:'38px'}} />
+</div>

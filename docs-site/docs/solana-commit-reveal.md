@@ -104,3 +104,8 @@ The dashboard's accuracy card only shows "✅ verified on-chain" once every grad
 ## Network configuration, the golden rule
 
 RPC endpoint, program ID, token mint, JWT host, and API host must all come from the **same** network (devnet or mainnet). This project centralizes every network-dependent value in one place (`packages/txline-client/src/config.ts`) and asserts at startup that the loaded IDL's program address matches the configured network's known program ID, a mismatched pair fails loudly instead of silently misbehaving.
+
+
+<div style={{textAlign:'center',margin:'2.2rem 0 0.5rem',opacity:0.9}}>
+  <img src={require('@site/static/img/squirrels/rush-idle.gif').default} alt="" style={{height:'38px'}} />
+</div>

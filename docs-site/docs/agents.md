@@ -117,3 +117,8 @@ async function gradeFixtureSignals(fixtureId: number, finalScoreRecord: ScoreRec
 ```
 
 The dashboard's "✅ verified on-chain" badge only lights up once **every** graded signal behind an agent's accuracy number has had its Validation Proof cross-checked, computed over the full graded set, never a capped recent sample, so the badge is never shown optimistically while older signals remain unverified.
+
+
+<div style={{textAlign:'center',margin:'2.2rem 0 0.5rem',opacity:0.9}}>
+  <img src={require('@site/static/img/squirrels/rush-hop.gif').default} alt="" style={{height:'38px'}} />
+</div>

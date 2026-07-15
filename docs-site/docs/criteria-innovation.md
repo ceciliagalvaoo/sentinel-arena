@@ -82,3 +82,8 @@ The commitments are anchored using Solana's **SPL Memo program**, a standard, au
 The standard entry is *"an agent that trades and claims a hit rate."* Sentinel Arena's contribution is a category shift: **an agent whose honesty about its own track record is mathematically provable by anyone, on-chain, before the result exists**, delivered as a controlled two-agent experiment and built on an audited primitive rather than a bespoke contract. It answers a question the pattern everyone does cannot: *why should I believe your numbers?*
 
 *Previous: [← 3 · Logic & Architecture](./criteria-logic-architecture.md) · Next: [5 · Production Readiness →](./criteria-production-readiness.md)*
+
+
+<div style={{textAlign:'center',margin:'2.2rem 0 0.5rem',opacity:0.9}}>
+  <img src={require('@site/static/img/squirrels/rush-eat.gif').default} alt="" style={{height:'38px'}} />
+</div>

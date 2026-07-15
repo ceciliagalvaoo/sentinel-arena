@@ -30,3 +30,8 @@ The agents are configured to run in **replay mode** for local testing and demoin
 - **Mainnet deploy**, once the free-tier devnet validation window has run long enough to be confident in the pipeline under real economic stakes.
 - **A third strategy** reading the same feed, to stress-test whether the "same data, different strategy" comparison stays honest at n=3 instead of n=2.
 - **Historical leaderboard across multiple tournaments**, not just a single match's replay, the data model already supports it (everything is fixture-indexed); it's a dashboard aggregation feature away.
+
+
+<div style={{textAlign:'center',margin:'2.2rem 0 0.5rem',opacity:0.9}}>
+  <img src={require('@site/static/img/squirrels/sage-eat.gif').default} alt="" style={{height:'38px'}} />
+</div>

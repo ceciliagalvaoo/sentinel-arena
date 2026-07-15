@@ -79,3 +79,8 @@ npm run typecheck
 ```
 
 This runs `tsc -b` (or `tsc --noEmit` for the dashboard) across all ten packages/apps, the fastest way to confirm nothing is broken after a change, and what this project's own development loop leaned on continuously.
+
+
+<div style={{textAlign:'center',margin:'2.2rem 0 0.5rem',opacity:0.9}}>
+  <img src={require('@site/static/img/squirrels/sage-hop.gif').default} alt="" style={{height:'38px'}} />
+</div>

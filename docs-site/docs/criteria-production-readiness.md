@@ -101,3 +101,8 @@ Naming these plainly is the behaviour of a product built by people who expect it
 Sentinel Arena is **deployed on production-appropriate infrastructure**, exposes the **metrics and logs an operator needs**, and carries **reliability features earned against real failures**. It proved it can take a **real, high-volume, multi-hour shift** unattended, and it is **candid about its own edges**, which is exactly the posture a trading desk trusts. It is not a demo that happens to run; it is a product that has already worked a real day.
 
 *Previous: [← 4 · Innovation & Novelty](./criteria-innovation.md) · Back to [Judging Criteria overview](./judging.md)*
+
+
+<div style={{textAlign:'center',margin:'2.2rem 0 0.5rem',opacity:0.9}}>
+  <img src={require('@site/static/img/squirrels/rush-hop.gif').default} alt="" style={{height:'38px'}} />
+</div>
