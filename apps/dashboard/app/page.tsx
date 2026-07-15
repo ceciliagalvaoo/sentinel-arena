@@ -89,6 +89,20 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* England v Argentina, 2026-07-15 — both agents' VMs went down mid-match
+          (aggressive: OOM; conservative: a network stall with no timeout wedged
+          its event loop). No signal exists for that window on either agent and
+          none was reconstructed after the fact — a signal committed once the
+          result is knowable would defeat the whole point of this project. See
+          the Production Readiness docs for the full incident writeup. */}
+      {selectedFixture && selectedFixture.fixtureId === 18241006 && (
+        <div className="w-full max-w-[920px] bg-panel-row px-4 py-2.5 text-center text-[8px] leading-loose text-muted">
+          BOTH AGENTS LOST CONNECTIVITY DURING THIS MATCH, FROM ~16:35 TO ~19:27 UTC — A REAL INFRASTRUCTURE INCIDENT, NOT A DATA ISSUE
+          (SEE PRODUCTION READINESS DOCS). NO SIGNAL EXISTS FOR THAT WINDOW ON EITHER AGENT, AND NONE WAS ADDED AFTER THE FACT.
+          EVERYTHING ELSE SHOWN HERE IS REAL AND ON-CHAIN.
+        </div>
+      )}
+
       {isReplayShowcase && replay.hasHistory && (
         <div className="flex w-full max-w-[920px] flex-wrap items-center justify-center gap-3 bg-panel-row px-4 py-3 text-[8px] text-ink-soft">
           {replay.isComplete ? (
