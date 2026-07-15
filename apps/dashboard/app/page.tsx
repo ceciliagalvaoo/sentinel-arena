@@ -141,6 +141,7 @@ export default function DashboardPage() {
               tagline="THE AGGRESSIVE AGENT · k=1.5 · REACTS FAST TO ANY MOVE"
               participant1={selectedFixture.participant1}
               participant2={selectedFixture.participant2}
+              accuracyScope={isReplayShowcase ? "this-match" : "all-matches"}
             />
             <AgentCard
               data={conservativeCard}
@@ -149,6 +150,7 @@ export default function DashboardPage() {
               tagline="THE CONSERVATIVE AGENT · k=3.0 · ONLY MOVES ON STRONG SIGNALS"
               participant1={selectedFixture.participant1}
               participant2={selectedFixture.participant2}
+              accuracyScope={isReplayShowcase ? "this-match" : "all-matches"}
             />
           </section>
 

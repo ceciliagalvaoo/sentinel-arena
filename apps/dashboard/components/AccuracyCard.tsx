@@ -4,6 +4,8 @@ interface AccuracyCardProps {
   accuracy: AgentAccuracy;
   /** Which agent's colour the progress bar uses. */
   variant: "rush" | "sage";
+  /** "all-matches" (live: the backend's lifetime aggregate) or "this-match" (replay showcase: derived just from the selected fixture's own signals) — the label must track which one `accuracy` actually is, since the two can differ a lot. */
+  scope: "all-matches" | "this-match";
 }
 
 /**
@@ -11,16 +13,15 @@ interface AccuracyCardProps {
  * tinted only (arcade theme). The verified/pending badge lives in AgentCard's
  * header, next to the name — see AgentCard.
  */
-export function AccuracyCard({ accuracy, variant }: AccuracyCardProps) {
+export function AccuracyCard({ accuracy, variant, scope }: AccuracyCardProps) {
   const pct = accuracy.totalGradedSignals === 0 ? null : Math.round(accuracy.accuracy * 1000) / 10;
   const barColor = variant === "rush" ? "var(--rush)" : "var(--sage)";
 
   return (
     <div className="flex flex-col gap-2.5">
-      {/* This is the agent's lifetime record across every match it has graded —
-          NOT just the fixture shown in the feed below (a conservative agent can
-          have a strong overall record yet zero signals on the current match). */}
-      <div className="text-[7px] tracking-wide text-muted">OVERALL ACCURACY · ALL MATCHES</div>
+      <div className="text-[7px] tracking-wide text-muted">
+        {scope === "all-matches" ? "OVERALL ACCURACY · ALL MATCHES" : "ACCURACY · THIS MATCH"}
+      </div>
       <div className="flex items-baseline gap-3">
         <span className="text-2xl leading-none tabular-nums text-ink">{pct === null ? "—" : `${pct}%`}</span>
         <span className="text-[8px] leading-relaxed tabular-nums text-muted">

@@ -20,6 +20,8 @@ interface AgentCardProps {
   tagline: string;
   participant1?: string | null;
   participant2?: string | null;
+  /** "this-match" while replaying a finished fixture's showcase (data.accuracy is derived just from that fixture then, not the lifetime aggregate) — see page.tsx's isReplayShowcase. Defaults to "all-matches" (live mode). */
+  accuracyScope?: "all-matches" | "this-match";
 }
 
 /**
@@ -28,7 +30,7 @@ interface AgentCardProps {
  * badge, strategy line, accuracy, the pixel bar, and the event feed. A micro
  * wallet line stays as real on-chain proof (production readiness).
  */
-export function AgentCard({ data, variant, displayName, tagline, participant1, participant2 }: AgentCardProps) {
+export function AgentCard({ data, variant, displayName, tagline, participant1, participant2, accuracyScope = "all-matches" }: AgentCardProps) {
   const [allOpen, setAllOpen] = useState(false);
   const nameColor = variant === "rush" ? "text-rush" : "text-sage";
   // Sourced from the backend's full-set aggregate, never the capped feed — a
@@ -53,7 +55,7 @@ export function AgentCard({ data, variant, displayName, tagline, participant1, p
 
       <div className="text-[8px] leading-relaxed text-muted">{tagline}</div>
 
-      <AccuracyCard accuracy={data.accuracy} variant={variant} />
+      <AccuracyCard accuracy={data.accuracy} variant={variant} scope={accuracyScope} />
 
       <div className="mt-1 flex items-center justify-between gap-2">
         <span className="text-[8px] tracking-widest text-muted">EVENT FEED · THIS MATCH</span>
