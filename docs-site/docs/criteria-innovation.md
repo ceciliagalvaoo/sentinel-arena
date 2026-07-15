@@ -26,7 +26,7 @@ sequenceDiagram
     participant S as Solana (SPL Memo)
     participant M as Real match
     participant V as Anyone (verifier)
-    A->>S: COMMIT hash(prediction) — before result exists
+    A->>S: COMMIT hash(prediction), before result exists
     Note over M: ...match plays out...
     M-->>A: final whistle (result now known)
     A->>S: REVEAL full prediction

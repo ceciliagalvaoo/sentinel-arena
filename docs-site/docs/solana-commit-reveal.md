@@ -14,7 +14,7 @@ sequenceDiagram
     participant S as Solana (SPL Memo)
     participant M as Real match
     participant V as Anyone (verifier)
-    A->>S: COMMIT hash(prediction) — before result exists
+    A->>S: COMMIT hash(prediction), before result exists
     Note over M: ...match plays out...
     M-->>A: final whistle (result now known)
     A->>S: REVEAL full prediction
@@ -49,7 +49,7 @@ async function publishCommit(connection, payer, signalId, hashHex, agentId) { /*
 async function publishReveal(connection, payer, signalId, commitTxSig, payload) { /* ... */ }
 ```
 
-A dedicated Anchor program (verifying the hash match on-chain, inside the program itself, rather than via an external verifier) was scoped as an explicit **plan B** — the first thing to cut if the timeline got tight. The Memo Program alone is a complete, defensible submission on its own; the custom program was never built, by design, once the full Memo pipeline was proven end-to-end against real devnet transactions.
+A dedicated Anchor program (verifying the hash match on-chain, inside the program itself, rather than via an external verifier) was scoped as an explicit **plan B**, the first thing to cut if the timeline got tight. The Memo Program alone is a complete, defensible submission on its own; the custom program was never built, by design, once the full Memo pipeline was proven end-to-end against real devnet transactions.
 
 ## Two wallets, never shared
 
@@ -79,16 +79,16 @@ async function verifySignalProof(connection, commitTxSig, revealTxSig) {
 }
 ```
 
-This exact function backs `GET /api/verify?commitTxSig=&revealTxSig=` in `backend-api`, and the dashboard's `/verify` page is a thin UI over that same endpoint — a standalone tool that works for **any** commit/reveal pair using this memo format, not only the ones this project's two agents produced.
+This exact function backs `GET /api/verify?commitTxSig=&revealTxSig=` in `backend-api`, and the dashboard's `/verify` page is a thin UI over that same endpoint, a standalone tool that works for **any** commit/reveal pair using this memo format, not only the ones this project's two agents produced.
 
 ## Beyond commit-reveal: on-chain proof of the inputs too
 
 Commit-reveal proves the agent didn't change its mind after the fact. It doesn't, by itself, prove the *inputs* were genuine. Sentinel Arena closes that second gap by cross-checking both the final score and the specific odds tick that triggered a signal against TxLINE's own on-chain Merkle roots:
 
-- `validateStatV2` — confirms the final score used for grading matches TxLINE's daily scores Merkle root. Run **once per fixture** (all signals for that fixture share the same final result).
-- `validateOdds` — confirms the exact odds tick that triggered a specific signal matches TxLINE's daily odds Merkle root. Run **once per signal**, since each has its own triggering tick.
+- `validateStatV2`, confirms the final score used for grading matches TxLINE's daily scores Merkle root. Run **once per fixture** (all signals for that fixture share the same final result).
+- `validateOdds`, confirms the exact odds tick that triggered a specific signal matches TxLINE's daily odds Merkle root. Run **once per signal**, since each has its own triggering tick.
 
-Both were verified against real devnet data with the same rigor: a genuine proof returns `true`; the same proof with a tampered leaf (forged prices, same Merkle tree) is rejected on-chain with `InvalidSubTreeProof` / a validation failure — not a client-side check, an actual program-level rejection.
+Both were verified against real devnet data with the same rigor: a genuine proof returns `true`; the same proof with a tampered leaf (forged prices, same Merkle tree) is rejected on-chain with `InvalidSubTreeProof` / a validation failure, not a client-side check, an actual program-level rejection.
 
 ```typescript
 const isValidReal = await validateSignalOddsOnchain(program, connection, programId, apiClient, realMessageId, realTs);
@@ -99,8 +99,8 @@ const isValidTampered = await validateOddsOnchain(program, connection, programId
 // → throws AnchorError: InvalidSubTreeProof
 ```
 
-The dashboard's accuracy card only shows "✅ verified on-chain" once every graded signal has cleared this check too — a separate, stricter bar than "the commit-reveal hash matched."
+The dashboard's accuracy card only shows "✅ verified on-chain" once every graded signal has cleared this check too, a separate, stricter bar than "the commit-reveal hash matched."
 
-## Network configuration — the golden rule
+## Network configuration, the golden rule
 
-RPC endpoint, program ID, token mint, JWT host, and API host must all come from the **same** network (devnet or mainnet). This project centralizes every network-dependent value in one place (`packages/txline-client/src/config.ts`) and asserts at startup that the loaded IDL's program address matches the configured network's known program ID — a mismatched pair fails loudly instead of silently misbehaving.
+RPC endpoint, program ID, token mint, JWT host, and API host must all come from the **same** network (devnet or mainnet). This project centralizes every network-dependent value in one place (`packages/txline-client/src/config.ts`) and asserts at startup that the loaded IDL's program address matches the configured network's known program ID, a mismatched pair fails loudly instead of silently misbehaving.

@@ -1,11 +1,12 @@
-<div align="center">
-  <img src="docs/img/rush.gif" height="76" alt="Rush, the aggressive agent" />
-  &nbsp;&nbsp;
-  <img src="docs-site/static/img/logo.svg" width="72" height="72" alt="Sentinel Arena logo" />
-  &nbsp;&nbsp;
-  <img src="docs/img/sage.gif" height="76" alt="Sage, the conservative agent" />
+<p align="center">
+  <img src="docs/img/rush.gif" alt="Rush, the aggressive agent" height="100" />
+  &nbsp;&nbsp;&nbsp;
+  <img src="docs/img/logo.png" alt="Sentinel Arena" height="78" />
+  &nbsp;&nbsp;&nbsp;
+  <img src="docs/img/sage.gif" alt="Sage, the conservative agent" height="100" />
+</p>
 
-  # Sentinel Arena
+<div align="center">
 
   **Two autonomous trading agents. One live feed. Cryptographic proof neither cherry-picked the result.**
 
@@ -102,6 +103,23 @@ See the **[judging documentation](./docs/README.md)** for the full criterion-by-
 - [X] Demo video (≤5 min)
 - [x] [Hosted dashboard link](https://sentinel-dashboard-fq9r.onrender.com/), see [Deployment](https://ceciliagalvaoo.github.io/sentinel-arena/deployment) for how it's hosted and why
 
-## Authors
+## Team
 
-Built for the TxODDS World Cup Hackathon by **Pablo Azevedo** ([@zzaved](https://github.com/zzaved)) and **Cecília Galvão** ([@ceciliagalvaoo](https://github.com/ceciliagalvaoo)).
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <!-- <img src="docs/img/pablo.png" width="120" alt="Pablo Azevedo" /><br/> -->
+      <b>Pablo Azevedo</b><br/>
+      <sub>Full-Stack · Frontend · Product</sub><br/><br/>
+      <a href="https://github.com/zzaved">GitHub</a> · <a href="https://www.linkedin.com/in/pabloazevedo/">LinkedIn</a>
+    </td>
+    <td align="center" width="50%">
+      <!-- <img src="docs/img/cecilia.png" width="120" alt="Cecília Galvão" /><br/> -->
+      <b>Cecília Galvão</b><br/>
+      <sub>Agents · Backend · Blockchain</sub><br/><br/>
+      <a href="https://github.com/ceciliagalvaoo">GitHub</a> · <a href="https://www.linkedin.com/in/ceciliagalvaoo/">LinkedIn</a>
+    </td>
+  </tr>
+</table>
+
+<sub>Built for the TxODDS World Cup Hackathon · Track: Trading Tools and Agents.</sub>

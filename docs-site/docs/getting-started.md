@@ -6,11 +6,11 @@ sidebar_label: Getting Started
 
 # Getting Started
 
-Sentinel Arena is an npm-workspaces monorepo. Everything below runs against **Solana devnet** and TxLINE's free tier — no mainnet funds required.
+Sentinel Arena is an npm-workspaces monorepo. Everything below runs against **Solana devnet** and TxLINE's free tier, no mainnet funds required.
 
 ## Prerequisites
 
-- Node.js 24+ (native, not the Windows build if you're on WSL — see the [troubleshooting note](#wsl-gotcha) below)
+- Node.js 24+ (native, not the Windows build if you're on WSL, see the [troubleshooting note](#wsl-gotcha) below)
 - Docker + Docker Compose (for the one-command full-stack path)
 - A Solana devnet wallet with a small SOL balance for each agent (fund via [faucet.solana.com](https://faucet.solana.com))
 
@@ -46,9 +46,9 @@ npx tsx scripts/setup-subscription.ts agent-conservative
 
 Then run each app in its own terminal (`npm run dev --workspace=@sentinel/agent-aggressive`, etc.).
 
-## Replay mode — testing without a live match
+## Replay mode, testing without a live match
 
-Since World Cup judging happens after the tournament ends, the agents support a **replay mode** that reproduces a previously-recorded fixture's real odds/score history instead of the live TxLINE stream — same decision code path, same commit-reveal pipeline, just fed from `recorded_events` instead of SSE.
+Since World Cup judging happens after the tournament ends, the agents support a **replay mode** that reproduces a previously-recorded fixture's real odds/score history instead of the live TxLINE stream, same decision code path, same commit-reveal pipeline, just fed from `recorded_events` instead of SSE.
 
 ```bash
 # Backfill a completed fixture's full history via REST (no live SSE needed):
@@ -78,4 +78,4 @@ If you're developing inside WSL2 with Docker Desktop, two environment issues are
 npm run typecheck
 ```
 
-This runs `tsc -b` (or `tsc --noEmit` for the dashboard) across all ten packages/apps — the fastest way to confirm nothing is broken after a change, and what this project's own development loop leaned on continuously.
+This runs `tsc -b` (or `tsc --noEmit` for the dashboard) across all ten packages/apps, the fastest way to confirm nothing is broken after a change, and what this project's own development loop leaned on continuously.
