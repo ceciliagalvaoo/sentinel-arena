@@ -32,7 +32,7 @@ Both agents read the exact same feed at the exact same instant, so any differenc
 
 ### 📖 Documentation
 
-- **[Judging documentation → `docs/`](./docs/README.md)**, a page per hackathon judging criterion (Core Functionality & Data Ingestion · Autonomous Operation · Logic & Architecture · Innovation & Novelty · Production Readiness), each explained and backed by real on-chain evidence and screenshots.
+- **[Judging documentation → docs site](https://ceciliagalvaoo.github.io/sentinel-arena/judging)**, a page per hackathon judging criterion (Core Functionality & Data Ingestion · Autonomous Operation · Logic & Architecture · Innovation & Novelty · Production Readiness), each explained with real on-chain evidence, screenshots and Mermaid diagrams. *(Also mirrored in [`docs/`](./docs/README.md) for reading straight on GitHub.)*
 - **[Full technical deep-dive → docs site](https://ceciliagalvaoo.github.io/sentinel-arena/)**, architecture, data model, and the TxLINE integration log (Docusaurus, on GitHub Pages).
 
 ## Repository layout
