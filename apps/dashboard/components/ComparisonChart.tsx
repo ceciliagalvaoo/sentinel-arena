@@ -25,16 +25,23 @@ const PAD = { l: 34, r: 12, t: 14, b: 24 };
 const RUSH = "#e0392b";
 const SAGE = "#f59e1b";
 
-/** Cumulative accuracy over real time (keyed by each signal's gradedAt), oldest-first. */
+/**
+ * Cumulative accuracy keyed by each signal's detectedAt (game time), not
+ * gradedAt — grading happens in batches whenever a fixture is finalized, so
+ * plotting by gradedAt clumps every signal from a match onto nearly the same
+ * timestamp regardless of when it actually fired. Points still only appear
+ * once `grade` lands (a pending signal has no correct/incorrect value yet),
+ * but the X position reflects when the agent actually detected it.
+ */
 function cumulativeSeries(signals: SignalWithLifecycle[]): Pt[] {
   const graded = signals
     .filter((s) => s.grade !== null)
     .slice()
-    .sort((a, b) => Date.parse(a.grade!.gradedAt) - Date.parse(b.grade!.gradedAt));
+    .sort((a, b) => Date.parse(a.detectedAt) - Date.parse(b.detectedAt));
   let ok = 0;
   return graded.map((s, i) => {
     if (s.grade!.correct) ok += 1;
-    return { ts: Date.parse(s.grade!.gradedAt), value: ok / (i + 1) };
+    return { ts: Date.parse(s.detectedAt), value: ok / (i + 1) };
   });
 }
 
@@ -49,11 +56,14 @@ function valueAt(pts: Pt[], t: number): number | null {
 }
 
 function fmtTime(ts: number, withSeconds = false): string {
-  return new Date(ts).toLocaleTimeString("en-US", {
+  const date = new Date(ts);
+  const datePart = date.toLocaleDateString("en-US", { month: "2-digit", day: "2-digit" });
+  const timePart = date.toLocaleTimeString("en-US", {
     hour: "2-digit",
     minute: "2-digit",
     ...(withSeconds ? { second: "2-digit" } : {}),
   });
+  return `${datePart} ${timePart}`;
 }
 
 /**

@@ -30,7 +30,9 @@ export function formatPct(value: number): string {
 
 export function formatTimestamp(iso: string): string {
   const date = new Date(iso);
-  return date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  const datePart = date.toLocaleDateString("en-US", { month: "short", day: "2-digit" });
+  const timePart = date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  return `${datePart} · ${timePart}`;
 }
 
 export function formatSol(sol: number): string {

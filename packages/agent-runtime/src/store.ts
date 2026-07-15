@@ -44,6 +44,12 @@ export interface UnrecoverableOrphanedSignal extends QueryResultRow {
   fixture_id: string;
 }
 
+export interface GradeNeedingValidationRecheck extends QueryResultRow {
+  fixture_id: number;
+  scores_seq_used: number;
+  final_outcome: string;
+}
+
 /** Postgres-backed persistence for the signal lifecycle (signals -> commits -> reveals -> grades). */
 export class SignalStore {
   constructor(private readonly db: Queryable) {}
@@ -218,6 +224,36 @@ export class SignalStore {
     await this.db.query(
       `INSERT INTO grades (signal_id, final_outcome, correct, scores_seq_used, validation_proof_checked, odds_proof_checked) VALUES ($1, $2, $3, $4, $5, $6)`,
       [signalId, finalOutcome, correct, scoresSeqUsed, validationProofChecked, oddsProofChecked],
+    );
+  }
+
+  /**
+   * `checkValidationProof` (loop.ts) only gets one shot, right when
+   * `game_finalised` arrives — if TxLINE hadn't anchored that day's Merkle
+   * root on-chain yet at that exact moment, the on-chain check fails and
+   * `validation_proof_checked` is stuck at `false` forever with no retry.
+   * One row per fixture (not per signal): every pending signal on the same
+   * fixture graded against the same final score, so the on-chain result is
+   * identical for all of them — no need to re-check each one individually.
+   */
+  async findGradesNeedingValidationRecheck(): Promise<GradeNeedingValidationRecheck[]> {
+    const { rows } = await this.db.query<GradeNeedingValidationRecheck>(
+      `SELECT DISTINCT s.fixture_id, g.scores_seq_used, g.final_outcome
+       FROM grades g
+       JOIN signals s ON s.id = g.signal_id
+       WHERE g.validation_proof_checked = false`,
+    );
+    return rows;
+  }
+
+  /** Flips every still-unchecked grade for this fixture to checked, across both agents — the recheck result is fixture-wide, not agent-specific. */
+  async markFixtureGradesValidationChecked(fixtureId: number): Promise<void> {
+    await this.db.query(
+      `UPDATE grades g
+       SET validation_proof_checked = true
+       FROM signals s
+       WHERE g.signal_id = s.id AND s.fixture_id = $1 AND g.validation_proof_checked = false`,
+      [fixtureId],
     );
   }
 

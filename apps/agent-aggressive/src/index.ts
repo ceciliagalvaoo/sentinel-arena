@@ -24,9 +24,17 @@ import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { config as loadDotenv } from "dotenv";
-import { Connection, Keypair } from "@solana/web3.js";
+import type { Program } from "@coral-xyz/anchor";
+import { Connection, Keypair, type PublicKey } from "@solana/web3.js";
 import { Pool } from "pg";
-import { createApiClient, createProgram, getNetworkConfig, resolveNetworkFromEnv, startGuestAuth } from "@sentinel/txline-client";
+import {
+  createApiClient,
+  createProgram,
+  getNetworkConfig,
+  resolveNetworkFromEnv,
+  startGuestAuth,
+  validateFinalScoreOnchain,
+} from "@sentinel/txline-client";
 import { LiveTxLineSource, ReplayDataSource, type MarketDataSource } from "@sentinel/market-data-source";
 import { AgentLoop, SignalStore } from "@sentinel/agent-runtime";
 import { resolveDatabaseSsl } from "@sentinel/shared-types";
@@ -159,6 +167,63 @@ function scheduleReplayBackfillSweep(agentId: string, pool: Pool, store: SignalS
   }, REPLAY_BACKFILL_SWEEP_MS);
 }
 
+const VALIDATION_RECHECK_SWEEP_MS = 20 * 60 * 1000;
+
+/**
+ * `checkValidationProof` (agent-runtime's loop.ts) only ever gets one shot,
+ * right when `game_finalised` arrives — if TxLINE hadn't anchored that day's
+ * Merkle root on-chain yet at that exact moment, the on-chain `validateStatV2`
+ * call fails and `grades.validation_proof_checked` is stuck at `false`
+ * forever, even though the signal itself graded correctly (reveal + hash
+ * verification are unaffected — this is strictly the on-chain-proof bonus
+ * check, never a blocker for grading itself, see architecture doc section
+ * 12). This periodically retries every grade still marked unchecked; once
+ * the root lands on-chain, the retry succeeds and the dashboard's "VERIFIED
+ * ON-CHAIN" badge catches up. Same "one owner" reasoning as
+ * scheduleReplayBackfillSweep: this is fixture-wide work, not agent-specific
+ * (the check result is identical for both agents' signals on that fixture),
+ * so only agent-aggressive runs it.
+ */
+function scheduleValidationRecheckSweep(
+  agentId: string,
+  store: SignalStore,
+  program: Program,
+  connection: Connection,
+  programId: PublicKey,
+  maybeApiClient: AxiosInstance | undefined,
+): void {
+  if (!maybeApiClient) return; // no session -> can't hit TxLINE's REST endpoints either
+  const apiClient = maybeApiClient; // narrowed once, outside the closure below
+
+  async function sweep(): Promise<void> {
+    const due = await store.findGradesNeedingValidationRecheck();
+    for (const { fixture_id: fixtureId, scores_seq_used: seq, final_outcome: outcome } of due) {
+      try {
+        const nowValid = await validateFinalScoreOnchain(
+          program,
+          connection,
+          programId,
+          apiClient,
+          fixtureId,
+          seq,
+          outcome as "participant1_win" | "participant2_win" | "draw",
+        );
+        if (nowValid) {
+          await store.markFixtureGradesValidationChecked(fixtureId);
+          console.log(`[${agentId}] VALIDATION-RECHECK fixture=${fixtureId} now confirmed on-chain`);
+        }
+      } catch (err) {
+        console.error(`[${agentId}] validation recheck failed for fixture ${fixtureId} — will retry next sweep`, err);
+      }
+    }
+  }
+
+  sweep().catch((err) => console.error(`[${agentId}] validation-recheck sweep failed`, err));
+  setInterval(() => {
+    sweep().catch((err) => console.error(`[${agentId}] validation-recheck sweep failed`, err));
+  }, VALIDATION_RECHECK_SWEEP_MS);
+}
+
 async function main() {
   assertEnv();
 
@@ -216,6 +281,7 @@ async function main() {
 
   await loop.start();
   if (!process.env.REPLAY_FIXTURE_ID) scheduleReplayBackfillSweep(agentId, pool, store, apiClient);
+  scheduleValidationRecheckSweep(agentId, store, program, connection, config.programId, apiClient);
   await source.start();
   // LiveTxLineSource.start() resolves immediately (the reconnect loops run
   // detached, indefinitely) — only REPLAY mode actually runs to completion.
