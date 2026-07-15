@@ -1,5 +1,5 @@
 .heroBanner {
-  padding: 5rem 0 4rem;
+  padding: 3.5rem 0 3rem;
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -12,17 +12,42 @@
   }
 }
 
+.mascotRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.heroMascot {
+  height: 84px;
+  image-rendering: pixelated;
+}
+
+.heroTitle {
+  font-size: clamp(1.6rem, 5vw, 2.6rem);
+  margin: 0;
+  text-shadow: 3px 3px 0 var(--rush), 6px 6px 0 rgba(0, 0, 0, 0.25);
+}
+
+@media screen and (max-width: 600px) {
+  .heroMascot {
+    height: 60px;
+  }
+}
+
 .buttons {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
   flex-wrap: wrap;
-  margin-top: 1.5rem;
+  margin-top: 1.75rem;
 }
 
 .pitch {
-  max-width: 640px;
+  max-width: 660px;
   margin: 1rem auto 0;
   font-size: 1.05rem;
   color: var(--ifm-color-emphasis-700);
@@ -33,55 +58,87 @@
   gap: 1.5rem;
   justify-content: center;
   flex-wrap: wrap;
-  margin: 2.5rem auto 0;
-  max-width: 720px;
+  margin: 2.75rem auto 0;
+  max-width: 820px;
 }
 
 .agentCard {
-  flex: 1 1 260px;
+  flex: 1 1 340px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   border-radius: 1rem;
-  border: 1px solid var(--ifm-toc-border-color);
-  padding: 1.25rem 1.5rem;
+  padding: 1.15rem 1.35rem;
   text-align: left;
   background: var(--ifm-background-surface-color);
-  border-top: 4px solid transparent;
+  border: 1px solid var(--ifm-toc-border-color);
+  border-left-width: 6px;
 }
 
-.agentCard--aggressive {
-  border-top-color: var(--sentinel-aggressive);
-}
-
-.agentCard--conservative {
-  border-top-color: var(--sentinel-conservative);
+.agentGif {
+  height: 72px;
+  flex-shrink: 0;
+  image-rendering: pixelated;
 }
 
 .agentCard h3 {
-  margin-bottom: 0.25rem;
+  margin: 0 0 0.15rem;
+  font-family: var(--font-pixel);
+  font-size: 0.95rem;
 }
 
-.agentCard--aggressive h3 {
-  color: var(--sentinel-aggressive);
+.agentMeta {
+  margin: 0 0 0.4rem;
+  font-size: 0.85rem;
+  opacity: 0.85;
 }
 
-.agentCard--conservative h3 {
-  color: var(--sentinel-conservative);
+.agentCard p {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.agentRush {
+  border-left-color: var(--rush);
+  background: linear-gradient(90deg, var(--rush-soft) 0%, var(--ifm-background-surface-color) 55%);
+}
+.agentRush h3 {
+  color: var(--rush);
+}
+
+.agentSage {
+  border-left-color: var(--sage);
+  background: linear-gradient(90deg, var(--sage-soft) 0%, var(--ifm-background-surface-color) 55%);
+}
+.agentSage h3 {
+  color: var(--sage);
+}
+
+.startHere {
+  text-align: center;
+  margin: 2.5rem 0 0.5rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  opacity: 0.85;
 }
 
 .sectionGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.5rem;
-  margin: 2rem 0;
+  gap: 1.25rem;
+  margin: 1.25rem 0 3rem;
 }
 
 .sectionCard {
   border-radius: 1rem;
   border: 1px solid var(--ifm-toc-border-color);
-  padding: 1.5rem;
+  padding: 1.4rem;
   display: block;
   text-decoration: none !important;
   color: var(--ifm-font-color-base) !important;
   transition: border-color 0.15s ease, transform 0.15s ease;
+  background: var(--ifm-background-surface-color);
 }
 
 .sectionCard:hover {
@@ -92,6 +149,7 @@
 .sectionCard h3 {
   color: var(--ifm-color-primary);
   margin-bottom: 0.5rem;
+  font-size: 1.05rem;
 }
 
 .sectionCard p {

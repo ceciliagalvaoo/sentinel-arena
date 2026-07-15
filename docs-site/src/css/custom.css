@@ -1,9 +1,15 @@
 /**
- * Sentinel Arena brand palette — same source as apps/dashboard/app/globals.css
- * (validated via the dataviz skill: deep indigo-violet accent, deliberately
- * its own hue family rather than the industry-standard AI-product orange).
+ * Sentinel Arena docs theme — mirrors the arcade dashboard
+ * (apps/dashboard/app/globals.css): graphite surfaces, Press Start 2P for
+ * titles only (body stays readable), Rush = coral-red, Sage = orange, brand
+ * accent = indigo-violet. Dark is the default to match the dark-only product.
  */
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
+
 :root {
+  --font-pixel: "Press Start 2P", ui-monospace, monospace;
+
+  /* brand accent (indigo-violet) */
   --ifm-color-primary: #5b3fd1;
   --ifm-color-primary-dark: #4b2fc3;
   --ifm-color-primary-darker: #452bb2;
@@ -14,19 +20,26 @@
   --ifm-code-font-size: 92%;
   --docusaurus-highlighted-code-line-bg: rgba(91, 63, 209, 0.1);
 
-  --ifm-background-color: #f9f9f7;
+  --ifm-background-color: #f4f4f2;
   --ifm-background-surface-color: #fcfcfb;
   --ifm-navbar-background-color: #fcfcfb;
-  --ifm-footer-background-color: #0b0b0b;
+  --ifm-footer-background-color: #1a1030;
 
-  /* The two agents' identity colors — reused in callouts/badges across the docs. */
-  --sentinel-aggressive: #e5502f;
-  --sentinel-aggressive-soft: #fceae6;
-  --sentinel-conservative: #2a78d6;
-  --sentinel-conservative-soft: #dfeaf9;
+  /* agent identity — Rush coral, Sage orange (matches the platform) */
+  --rush: #e0392b;
+  --rush-soft: #fbe7e4;
+  --sage: #f59e1b;
+  --sage-soft: #fdf0dc;
+  --sentinel-aggressive: var(--rush);
+  --sentinel-aggressive-soft: var(--rush-soft);
+  --sentinel-conservative: var(--sage);
+  --sentinel-conservative-soft: var(--sage-soft);
+
+  --ifm-heading-font-weight: 400;
 }
 
-[data-theme='dark'] {
+[data-theme="dark"] {
+  /* arcade graphite */
   --ifm-color-primary: #9c86f0;
   --ifm-color-primary-dark: #866bed;
   --ifm-color-primary-darker: #7759ea;
@@ -36,35 +49,83 @@
   --ifm-color-primary-lightest: #dfd8fa;
   --docusaurus-highlighted-code-line-bg: rgba(156, 134, 240, 0.18);
 
-  --ifm-background-color: #0d0d0d;
-  --ifm-background-surface-color: #1a1a19;
-  --ifm-navbar-background-color: #1a1a19;
+  --ifm-background-color: #202024;
+  --ifm-background-surface-color: #27272c;
+  --ifm-navbar-background-color: #1c1c20;
+  --ifm-footer-background-color: #17171a;
+  --ifm-toc-border-color: #3f3f48;
 
-  --sentinel-aggressive: #d6431f;
-  --sentinel-aggressive-soft: #3d2016;
-  --sentinel-conservative: #3987e5;
-  --sentinel-conservative-soft: #182a3d;
+  --rush: #e0392b;
+  --rush-soft: #3a1e17;
+  --sage: #f59e1b;
+  --sage-soft: #3a2a12;
+  --sentinel-aggressive: var(--rush);
+  --sentinel-aggressive-soft: var(--rush-soft);
+  --sentinel-conservative: var(--sage);
+  --sentinel-conservative-soft: var(--sage-soft);
+}
+
+/* ---------- pixel font on titles / chrome only (never body text) ---------- */
+.navbar__title,
+.hero__title,
+.markdown h1,
+.markdown h2,
+h1.hero__title {
+  font-family: var(--font-pixel);
+  letter-spacing: 0.5px;
+  line-height: 1.7;
+}
+.markdown h1 {
+  font-size: 1.55rem;
+}
+.markdown h2 {
+  font-size: 1.05rem;
+  margin-top: 2.4rem;
+}
+.navbar__title {
+  font-size: 0.82rem;
+}
+/* h3+ stay in the readable font so long docs don't tire the eye */
+.markdown h3 {
+  font-weight: 700;
 }
 
 .navbar {
   box-shadow: 0 1px 0 0 var(--ifm-toc-border-color);
 }
 
-/* Agent badge — used in MDX as <span className="agent-badge agent-badge--aggressive">Aggressive</span> */
+/* sidebar category labels get a subtle pixel touch */
+.menu__list-item-collapsible .menu__link,
+.theme-doc-sidebar-item-category > .menu__list-item-collapsible > .menu__link {
+  font-family: var(--font-pixel);
+  font-size: 0.62rem;
+  letter-spacing: 0.4px;
+}
+
+/* ---------- agent badges / colour blocks (used in MDX) ---------- */
 .agent-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   padding: 0.15rem 0.6rem;
   border-radius: 999px;
-  font-weight: 600;
-  font-size: 0.85em;
+  font-weight: 700;
+  font-size: 0.82em;
 }
 .agent-badge--aggressive {
-  background: var(--sentinel-aggressive-soft);
-  color: var(--sentinel-aggressive);
+  background: var(--rush-soft);
+  color: var(--rush);
 }
 .agent-badge--conservative {
-  background: var(--sentinel-conservative-soft);
-  color: var(--sentinel-conservative);
+  background: var(--sage-soft);
+  color: var(--sage);
+}
+
+/* Mermaid diagrams: give them room and a subtle surface */
+.docusaurus-mermaid-container {
+  margin: 1.5rem 0;
+}
+
+img[src$=".gif"] {
+  image-rendering: pixelated;
 }

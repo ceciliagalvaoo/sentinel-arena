@@ -10,7 +10,7 @@ TxLINE is TxODDS's Web3 product: a hybrid on-chain (Solana) / off-chain system d
 
 ## Why this only works with TxLINE, not any generic odds feed
 
-It would be easy to build a version of this project against any ordinary odds/scores REST API and just add commit-reveal on top. That version would prove one thing: *the agent didn't alter its own signal after the fact.* It would not prove the more important thing underneath: *the market data the agent reacted to was itself genuine, unaltered TxODDS output, and the final score used to grade the signal was real.* Without that second proof, a "cryptographically verified" track record still ultimately rests on trusting the data provider's word — exactly the "trust us" gap this project exists to close (see [Production Readiness → Innovation & Novelty](/production-readiness#innovation--novelty)).
+It would be easy to build a version of this project against any ordinary odds/scores REST API and just add commit-reveal on top. That version would prove one thing: *the agent didn't alter its own signal after the fact.* It would not prove the more important thing underneath: *the market data the agent reacted to was itself genuine, unaltered TxODDS output, and the final score used to grade the signal was real.* Without that second proof, a "cryptographically verified" track record still ultimately rests on trusting the data provider's word — exactly the "trust us" gap this project exists to close (see [Judging Criteria → Innovation & Novelty](/criteria-innovation)).
 
 TxLINE is what makes closing that whole gap possible, specifically because of three things a generic feed doesn't offer:
 

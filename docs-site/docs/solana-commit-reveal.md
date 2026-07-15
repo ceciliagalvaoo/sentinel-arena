@@ -6,6 +6,23 @@ sidebar_label: Solana & Commit-Reveal
 
 # Solana & Commit-Reveal
 
+The whole trust model in one diagram: the hash is published **before** the result exists, and revealed only after, so anyone can prove the agent could not have cherry-picked with hindsight.
+
+```mermaid
+sequenceDiagram
+    participant A as Agent (Rush/Sage)
+    participant S as Solana (SPL Memo)
+    participant M as Real match
+    participant V as Anyone (verifier)
+    A->>S: COMMIT hash(prediction) — before result exists
+    Note over M: ...match plays out...
+    M-->>A: final whistle (result now known)
+    A->>S: REVEAL full prediction
+    V->>S: read commit + reveal
+    V->>V: hash(reveal) equals committed hash?<br/>and commit older than reveal?
+    V-->>V: independent yes / no
+```
+
 ## Why the SPL Memo Program, not a custom Anchor program
 
 Rather than writing and auditing a bespoke on-chain program, Sentinel Arena commits hashes using the **SPL Memo Program**, already deployed on both mainnet and devnet:

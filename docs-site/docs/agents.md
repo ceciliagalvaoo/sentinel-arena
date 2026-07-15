@@ -45,6 +45,19 @@ During the first ~30 odds ticks of a fixture, both agents only observe and accum
 
 ## The decision loop
 
+```mermaid
+flowchart TD
+    O["Odds event"] --> W["Push price into the fixture+outcome window<br/>compute pctChange"]
+    W --> T{"Threshold calibrated?<br/>(warmup complete)"}
+    T -->|no| OB["Observe only — never fire yet"]
+    T -->|yes| C{"abs(pctChange) ≥ threshold?"}
+    C -->|no| N["Do nothing"]
+    C -->|yes| I{"Idempotency key already seen?"}
+    I -->|yes| SKIP["Silent no-op"]
+    I -->|no| CM["Hash payload → publishCommit (SPL Memo)<br/>persist + push WebSocket event"]
+```
+
+
 ```
 on every Odds event:
   1. push the price into that fixture+outcome's sliding window

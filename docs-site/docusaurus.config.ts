@@ -57,7 +57,8 @@ const config: Config = {
   themeConfig: {
     image: "img/logo.svg",
     colorMode: {
-      respectPrefersColorScheme: true,
+      defaultMode: "dark",
+      respectPrefersColorScheme: false,
     },
     navbar: {
       title: "Sentinel Arena",

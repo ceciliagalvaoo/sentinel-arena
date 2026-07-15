@@ -6,7 +6,24 @@ sidebar_label: Deployment
 
 # Deployment
 
-Sentinel Arena runs in production across **three separate free-tier providers**, not one. That split isn't accidental complexity — every piece landed where it did because of a specific constraint, and working around those constraints surfaced real infrastructure bugs worth documenting alongside the code fixes in [Production Readiness](/production-readiness).
+Sentinel Arena runs in production across **three separate free-tier providers**, not one. That split isn't accidental complexity — every piece landed where it did because of a specific constraint, and working around those constraints surfaced real infrastructure bugs worth documenting alongside the code fixes in [Hardening & Incidents](/production-readiness).
+
+```mermaid
+flowchart TB
+    TX["TxLINE feed"] --> AG
+    subgraph GCP["Google Cloud e2-micro VM (24/7)"]
+      AG["Agents: Rush + Sage — always awake"]
+    end
+    AG -->|commit / reveal| SOL["Solana devnet (SPL Memo)"]
+    AG --> DB[("Supabase — PostgreSQL")]
+    subgraph RENDER["Render (Docker)"]
+      API["Backend API (read-only)"]
+      UI["Arcade dashboard"]
+    end
+    DB --> API
+    API --> UI
+    SOL -.-> UI
+```
 
 ## Why three providers, not one
 

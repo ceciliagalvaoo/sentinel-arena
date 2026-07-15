@@ -6,6 +6,12 @@ sidebar_label: Overview
 
 # Sentinel Arena
 
+<div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'22px',flexWrap:'wrap',margin:'8px 0 22px'}}>
+  <img src={require('@site/static/img/judging/rush.gif').default} alt="Rush, the aggressive agent" style={{height:'90px'}} />
+  <img src={require('@site/static/img/judging/logo.png').default} alt="Sentinel Arena" style={{height:'68px'}} />
+  <img src={require('@site/static/img/judging/sage.gif').default} alt="Sage, the conservative agent" style={{height:'90px'}} />
+</div>
+
 **TxODDS World Cup Hackathon · Track: Trading Tools and Agents**
 
 Sentinel Arena is a pair of fully autonomous trading agents that watch TxLINE's live World Cup odds feed, detect sharp market movements, and publish a **cryptographic commitment of the signal on Solana before the match result is known** — revealing the full content only after the final whistle. The result is a trading track record that is **mathematically impossible to forge after the fact**.
@@ -22,7 +28,7 @@ Sentinel Arena solves this by construction: every signal an agent produces is **
 
 ## Two agents, one feed, opposite temperaments
 
-| | Agent-Aggressive | Agent-Conservative |
+| | **Rush** (aggressive) | **Sage** (conservative) |
 |---|---|---|
 | Sensitivity multiplier (`k`) | 1.5× | 3.0× |
 | Detection window | 60s | 180s |
@@ -36,11 +42,9 @@ No other submission proves agent reputation with cryptographic guarantees — mo
 
 ## Where to go next
 
-- **[Getting Started](/getting-started)** — run the whole stack locally in a few commands.
-- **[Architecture](/architecture)** — the `MarketDataSource` abstraction, commit-reveal design, data model.
-- **[The Agents](/agents)** — the auto-calibrated threshold, the decision loop, the grading engine.
-- **[TxLINE Integration](/txline-integration)** — every endpoint used, the auth flow, Merkle proof validation.
-- **[Solana & Commit-Reveal](/solana-commit-reveal)** — the SPL Memo commitment scheme and the public verification tool.
-- **[Dashboard & User Flow](/dashboard-user-flow)** — what a judge actually sees when they open the app.
-- **[Production Readiness](/production-readiness)** — how the build maps to the hackathon's judging criteria, point by point.
-- **[Roadmap](/roadmap)** — what's next after the hackathon.
+This documentation is organized into four sections:
+
+- **[Judging Criteria](/judging)**, how Sentinel Arena meets each of the track's five criteria, with on-chain evidence, screenshots and diagrams. **Start here if you're evaluating the project.**
+- **How It Works**, the technical deep-dive: [Architecture](/architecture), [The Agents](/agents), [TxLINE Integration](/txline-integration), [Solana & Commit-Reveal](/solana-commit-reveal), [Dashboard & User Flow](/dashboard-user-flow), and the [Hardening & Incidents](/production-readiness) log.
+- **Run & Deploy**, [Getting Started](/getting-started) locally and the production [Deployment](/deployment) topology.
+- **Reference**, the [TxLINE Feedback Log](/txline-feedback-log) and the [Roadmap](/roadmap).

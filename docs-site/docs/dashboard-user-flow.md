@@ -8,6 +8,14 @@ sidebar_label: Dashboard & User Flow
 
 The dashboard is deliberately **read-only** — there is no button anywhere that lets a human intervene in what the agents do. That's not a missing feature; it's a visual reinforcement of the Autonomous Operation claim: nothing about the product depends on a human clicking anything after deploy.
 
+<p style={{textAlign:'center'}}><b>Figure 1 - The arcade dashboard: Rush and Sage, their event feeds and the cumulative-accuracy chart</b></p>
+
+<div style={{textAlign:'center'}}>
+  <img src={require('@site/static/img/judging/overview.png').default} alt="The Sentinel Arena dashboard" style={{width:'100%',maxWidth:'760px'}} />
+</div>
+
+<p style={{textAlign:'center'}}><sub>Source: The authors (2026)</sub></p>
+
 ## What's on screen
 
 **Header** — the Sentinel Arena logo and name, a live/mock data indicator, a Live/Replay toggle, and a fixture selector (filtered to whichever mode is active). A "How this works" button opens a plain-language, illustrated tutorial covering every concept below — written for someone who has never seen the project before, not just for a judge who already read this documentation.

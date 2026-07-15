@@ -8,6 +8,22 @@ sidebar_label: Architecture
 
 ## Component overview
 
+```mermaid
+flowchart TD
+    TX["TxLINE (TxODDS)<br/>Auth · Odds/Scores SSE · Merkle proofs"]
+    TX --> TXC["txline-client<br/>auth · subscribe · streaming · snapshots"]
+    TX --> VAL["validation.ts<br/>validateStatV2 / validateOdds"]
+    TXC --> MDS["market-data-source<br/>LiveTxLineSource | ReplayDataSource"]
+    MDS --> AR["agent-runtime × 2<br/>AutoCalibratedThreshold + AgentLoop"]
+    VAL -. Merkle cross-check .-> AR
+    AR --> PG[("Postgres<br/>signals · commits · reveals · grades")]
+    AR -->|commit-reveal memo| SOL["Solana devnet<br/>SPL Memo Program"]
+    PG --> API["backend-api<br/>Fastify + WebSocket"]
+    API --> UI["dashboard<br/>Next.js"]
+```
+
+The same flow in text:
+
 ```
 TxLINE (TxODDS)
   Auth (JWT) · Odds/Scores REST + SSE · Merkle validation proofs · Solana program

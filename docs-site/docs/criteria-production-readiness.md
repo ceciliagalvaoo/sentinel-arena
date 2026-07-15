@@ -82,6 +82,8 @@ Each reliability feature exists because a real failure mode was hit and fixed ag
 - **Wallet safety.** New commits pause automatically below the fee floor and resume when topped up.
 - **A read-only control surface.** The dashboard cannot act on the agents' behalf, a deliberate blast-radius limit.
 
+Each of these has a story behind it. See the full [**Hardening & Incidents**](./production-readiness.md) log for every real defect found against live infrastructure and exactly how it was fixed.
+
 ## Proof it survives real load
 
 The strongest evidence is the live settle during **France × Spain** on July 14–15, 2026: the agents committed **over eight thousand signals** during the match, then autonomously published **thousands of reveal transactions** over roughly 3.5 hours after full-time, with the backend answering `200 OK` in under a second throughout. That is the closest thing to a production shift a hackathon can offer.
