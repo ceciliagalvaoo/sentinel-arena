@@ -82,7 +82,17 @@ export default function DashboardPage() {
         wsConnected={wsConnected}
       />
 
-      {selectedFixture && selectedFixture.status === "finished" && !selectedFixture.capturedLive && (
+      {/* `capturedLive` isn't reliable for this anymore: the periodic backfill
+          sweep (findFixturesNeedingReplayBackfill, ~6h after any match ends)
+          flips it to false on EVERY old finished fixture to populate
+          recorded_events for audit purposes, whether or not that fixture was
+          actually captured live at the time. France v Morocco (18209181) is
+          the one match genuinely fed through ReplayDataSource after the fact
+          (README's validation run, before the agents were live-streaming) —
+          Spain/Argentina and England/France were both captured live tick-by-
+          tick, they just got the same audit flag flipped incidentally once
+          they aged past 6h. Anchor on the fixture, not the flag. */}
+      {selectedFixture && selectedFixture.fixtureId === 18209181 && (
         <div className="w-full max-w-[920px] bg-panel-row px-4 py-2.5 text-center text-[8px] leading-loose text-muted">
           THIS MATCH&apos;S DATA WAS RECONSTRUCTED FROM TXLINE&apos;S HISTORICAL RECORD AFTER THE FACT, NOT CAPTURED LIVE TICK-BY-TICK —
           EVERY HASH AND RESULT BELOW IS REAL AND ON-CHAIN, BUT THE TIMESTAMPS REFLECT WHEN WE PROCESSED THIS REPLAY.
