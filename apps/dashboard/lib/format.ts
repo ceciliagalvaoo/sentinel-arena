@@ -28,11 +28,22 @@ export function formatPct(value: number): string {
   return `${sign}${(value * 100).toFixed(1)}%`;
 }
 
+/** Fixed to Brasília time (UTC-3, no DST since 2019) for every viewer — a
+ * judge in another timezone must see the same clock we do, not their own
+ * browser's, since the whole feed is otherwise ambiguous about which "now"
+ * it's showing. */
+const DISPLAY_TIME_ZONE = "America/Sao_Paulo";
+
 export function formatTimestamp(iso: string): string {
   const date = new Date(iso);
-  const datePart = date.toLocaleDateString("en-US", { month: "short", day: "2-digit" });
-  const timePart = date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-  return `${datePart} · ${timePart}`;
+  const datePart = date.toLocaleDateString("en-US", { month: "short", day: "2-digit", timeZone: DISPLAY_TIME_ZONE });
+  const timePart = date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    timeZone: DISPLAY_TIME_ZONE,
+  });
+  return `${datePart} · ${timePart} BRT`;
 }
 
 export function formatSol(sol: number): string {

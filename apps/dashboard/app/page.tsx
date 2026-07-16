@@ -107,9 +107,9 @@ export default function DashboardPage() {
           the Production Readiness docs for the full incident writeup. */}
       {selectedFixture && selectedFixture.fixtureId === 18241006 && (
         <div className="w-full max-w-[920px] bg-panel-row px-4 py-2.5 text-center text-[8px] leading-loose text-muted">
-          BOTH AGENTS LOST CONNECTIVITY DURING THIS MATCH, FROM ~16:35 TO ~19:27 UTC — A REAL INFRASTRUCTURE INCIDENT, NOT A DATA ISSUE
-          (SEE PRODUCTION READINESS DOCS). NO SIGNAL EXISTS FOR THAT WINDOW ON EITHER AGENT, AND NONE WAS ADDED AFTER THE FACT.
-          EVERYTHING ELSE SHOWN HERE IS REAL AND ON-CHAIN.
+          BOTH AGENTS LOST CONNECTIVITY DURING THIS MATCH, FROM ~16:35 TO ~19:27 UTC (~13:35 TO ~16:27 BRT) — A REAL INFRASTRUCTURE
+          INCIDENT, NOT A DATA ISSUE (SEE PRODUCTION READINESS DOCS). NO SIGNAL EXISTS FOR THAT WINDOW ON EITHER AGENT, AND NONE WAS
+          ADDED AFTER THE FACT. EVERYTHING ELSE SHOWN HERE IS REAL AND ON-CHAIN.
         </div>
       )}
 
