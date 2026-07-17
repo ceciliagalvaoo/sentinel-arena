@@ -17,8 +17,16 @@ export default function DashboardPage() {
 
   const [mode, setMode] = useState<Mode>("replay");
 
+  // This is a World Cup product. Once the tournament is over the live TxLINE
+  // feed also carries other competitions (friendlies, leagues, ...), and the
+  // agents register any soccer fixture they see odds for. Those must never leak
+  // into the dashboard, so every fixture is filtered to the World Cup before
+  // the mode filter runs. (Frontend-only guard; nothing on the backend changes.)
   const filteredFixtures = useMemo(
-    () => fixtures.filter((f) => (mode === "live" ? f.status === "live" : f.status !== "live")),
+    () =>
+      fixtures
+        .filter((f) => (f.competition ?? "").toLowerCase().includes("world cup"))
+        .filter((f) => (mode === "live" ? f.status === "live" : f.status !== "live")),
     [fixtures, mode],
   );
 
