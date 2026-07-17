@@ -52,6 +52,12 @@ export async function listAgents(pool: Pool): Promise<AgentRow[]> {
 }
 
 export async function getAgentAccuracy(pool: Pool, agentId: string): Promise<AgentAccuracy> {
+  // Scoped to World Cup fixtures only. This is a World Cup product, but the
+  // agents register any soccer fixture they see odds for (e.g. friendlies the
+  // live feed carries once the tournament is over). Without the tracked_fixtures
+  // join + competition filter, those non-tournament matches would be counted
+  // into the headline accuracy once they finish and grade, silently polluting
+  // the number the dashboard shows. Read-only aggregate; no agent/pipeline change.
   const { rows } = await pool.query<{ correct_signals: string; total_graded_signals: string; unchecked_signals: string }>(
     `SELECT
        COUNT(*) FILTER (WHERE g.correct) AS correct_signals,
@@ -59,7 +65,9 @@ export async function getAgentAccuracy(pool: Pool, agentId: string): Promise<Age
        COUNT(*) FILTER (WHERE NOT g.validation_proof_checked) AS unchecked_signals
      FROM grades g
      JOIN signals s ON s.id = g.signal_id
-     WHERE s.agent_id = $1`,
+     JOIN tracked_fixtures tf ON tf.fixture_id = s.fixture_id
+     WHERE s.agent_id = $1
+       AND tf.competition ILIKE 'World Cup'`,
     [agentId],
   );
   const row = rows[0];
