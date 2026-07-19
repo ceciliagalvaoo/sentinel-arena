@@ -15,6 +15,12 @@
   [**📖 Full documentation**](https://ceciliagalvaoo.github.io/sentinel-arena/) · [Architecture](https://ceciliagalvaoo.github.io/sentinel-arena/architecture) · [The Agents](https://ceciliagalvaoo.github.io/sentinel-arena/agents) · [Production Readiness](https://ceciliagalvaoo.github.io/sentinel-arena/production-readiness)
 
   ### [🚀 Live dashboard](https://sentinel-dashboard-fq9r.onrender.com/)
+
+  ### 🎬 [Watch the demo](https://youtu.be/T40LWA3_C-k)
+
+  [![Watch the Sentinel Arena demo](https://img.youtube.com/vi/T40LWA3_C-k/maxresdefault.jpg)](https://youtu.be/T40LWA3_C-k)
+
+  <sub>Two agents, one live feed, and a track record you can verify yourself.</sub>
 </div>
 
 ---

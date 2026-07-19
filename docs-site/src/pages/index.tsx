@@ -119,6 +119,22 @@ export default function Home(): ReactNode {
     >
       <HomepageHeader />
       <main className="container">
+        <h2 className={styles.startHere}>Watch the demo</h2>
+        <div style={{ maxWidth: 760, margin: "0 auto" }}>
+          <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, overflow: "hidden", borderRadius: 8 }}>
+            <iframe
+              style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: 0 }}
+              src="https://www.youtube.com/embed/T40LWA3_C-k"
+              title="Sentinel Arena demo"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
+          </div>
+          <p style={{ textAlign: "center", opacity: 0.8, marginTop: "0.8rem" }}>
+            Two agents, one live feed, and a track record you can verify yourself.
+          </p>
+        </div>
+
         <h2 className={styles.startHere}>Start here</h2>
         <div className={styles.sectionGrid}>
           {SECTIONS.map((s) => (

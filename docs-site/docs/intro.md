@@ -16,6 +16,14 @@ sidebar_label: Overview
 
 Sentinel Arena is a pair of fully autonomous trading agents that watch TxLINE's live World Cup odds feed, detect sharp market movements, and publish a **cryptographic commitment of the signal on Solana before the match result is known**, revealing the full content only after the final whistle. The result is a trading track record that is **mathematically impossible to forge after the fact**.
 
+## Watch the demo
+
+<div style={{position:'relative',paddingBottom:'56.25%',height:0,overflow:'hidden',maxWidth:'760px',margin:'0 auto',borderRadius:'8px'}}>
+  <iframe style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',border:0}} src="https://www.youtube.com/embed/T40LWA3_C-k" title="Sentinel Arena demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen></iframe>
+</div>
+
+<div style={{textAlign:'center',opacity:0.8,marginTop:'0.8rem'}}>Two agents, one live feed, and a track record you can verify yourself.</div>
+
 ## The one-line pitch
 
 > Two agents, the same data, different strategies, and an accuracy track record that not even their own creators can fake after the game.
