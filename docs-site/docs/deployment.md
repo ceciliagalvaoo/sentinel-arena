@@ -11,7 +11,7 @@ Sentinel Arena runs in production across **three separate free-tier providers**,
 ```mermaid
 flowchart TB
     TX["TxLINE feed"] --> AG
-    subgraph GCP["Google Cloud e2-micro VM (24/7)"]
+    subgraph ORACLE["Oracle Cloud VM.Standard.E2.1.Micro (24/7)"]
       AG["Agents: Rush + Sage, always awake"]
     end
     AG -->|commit / reveal| SOL["Solana devnet (SPL Memo)"]

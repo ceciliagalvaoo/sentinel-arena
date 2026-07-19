@@ -33,7 +33,7 @@ Nothing here is a slide. The system runs as three cleanly separated tiers, each 
 ```mermaid
 flowchart TB
     TX["TxLINE feed"] --> AG
-    subgraph GCP["Google Cloud e2-micro VM (24/7)"]
+    subgraph ORACLE["Oracle Cloud VM.Standard.E2.1.Micro (24/7)"]
       AG["Agents: Rush + Sage<br/>always awake"]
     end
     AG -->|commit / reveal| SOL["Solana devnet<br/>(SPL Memo)"]
@@ -51,7 +51,7 @@ flowchart TB
 
 | Tier | Where it runs | Why there |
 |---|---|---|
-| **Agents (Rush & Sage)** | Google Cloud `e2-micro`, 24/7 | Must stay awake to catch a final whistle at an unpredictable time. |
+| **Agents (Rush & Sage)** | Oracle Cloud Always Free `VM.Standard.E2.1.Micro`, 24/7 | Must stay awake to catch a final whistle at an unpredictable time, and Always Free resources never expire. |
 | **Backend API + dashboard** | Render (Docker) | Occasionally-viewed, read-only surface; fine to cold-start. |
 | **Database** | Supabase (PostgreSQL) | Managed, durable Postgres that outlives the judging window. |
 | **Chain** | Solana devnet | Real on-chain commits; SPL Memo has the same address on mainnet, so promotion is a config change. |

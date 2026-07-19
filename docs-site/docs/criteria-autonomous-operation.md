@@ -71,7 +71,7 @@ This matters for autonomy because it shows the system makes **principled decisio
 
 ## Where it runs, and why that placement is deliberate
 
-The agents run **24/7 on a free-tier Google Cloud `e2-micro` VM**, launched with a single `docker compose -f docker-compose.agents.yml up -d`. Web hosts with free tiers spin their services down after minutes of inactivity, which is fatal for a process that must stay awake to catch a final whistle at an unpredictable time. Separating the always-on agents from the occasionally-viewed dashboard and the database means each piece lives where its uptime needs are actually met.
+The agents run **24/7 on an Oracle Cloud Always Free `VM.Standard.E2.1.Micro` VM**, each as a native Node.js process managed by `systemd` (`Restart=always`), not Docker, that shape's memory was too tight for a container runtime to install reliably. Web hosts with free tiers spin their services down after minutes of inactivity, which is fatal for a process that must stay awake to catch a final whistle at an unpredictable time, and Oracle's Always Free resources never expire. Separating the always-on agents from the occasionally-viewed dashboard and the database means each piece lives where its uptime needs are actually met.
 
 ## Why this satisfies the criterion
 
