@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Header, type Mode } from "@/components/Header";
 import { ArenaScene } from "@/components/ArenaScene";
 import { AgentCard } from "@/components/AgentCard";
@@ -10,6 +10,7 @@ import { useSentinelData } from "@/lib/use-sentinel-data";
 import { useFullSignals } from "@/lib/use-full-signals";
 import { useReplayAnimation } from "@/lib/use-replay-animation";
 import { mockAgentCards } from "@/lib/mock-data";
+import { flagKeyForTeam, paintFlag } from "@/lib/flags";
 import type { AgentId, SignalWithLifecycle } from "@/lib/types";
 
 export default function DashboardPage() {
@@ -31,6 +32,15 @@ export default function DashboardPage() {
   );
 
   const selectedFixture = filteredFixtures.find((f) => f.fixtureId === selectedFixtureId) ?? null;
+
+  // The tournament is over (Spain won the final, 2026-07-19) and no further World
+  // Cup fixture will ever go live again, so the old "NO LIVE MATCH RIGHT NOW."
+  // empty state would sit there forever looking like the app stalled rather than
+  // like the event ended. Painted once on mount; this canvas never changes fixture.
+  const championFlagRef = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    if (championFlagRef.current) paintFlag(championFlagRef.current, flagKeyForTeam("Spain"));
+  }, []);
 
   // Snap the selection to a fixture valid in the current mode so the dropdown
   // and the cards below never disagree about what's selected.
@@ -156,12 +166,23 @@ export default function DashboardPage() {
       {loading ? (
         <p className="text-[9px] text-muted">LOADING…</p>
       ) : !selectedFixture ? (
-        <div className="flex w-full max-w-[920px] flex-col items-center gap-2 bg-panel-soft py-14 text-center">
-          <span className="h-2 w-2 animate-arcblink bg-muted" />
-          <p className="text-[9px] text-ink-soft">{mode === "live" ? "NO LIVE MATCH RIGHT NOW." : "NO RECORDED FIXTURE FOR REPLAY YET."}</p>
-          <p className="text-[8px] text-muted">
-            {mode === "live" ? "THE AGENTS KEEP LISTENING — A MATCH SHOWS UP HERE AS SOON AS IT STARTS." : "RECORD A FIXTURE WITH scripts/seed-replay-data.ts."}
-          </p>
+        <div className="flex w-full max-w-[920px] flex-col items-center gap-2.5 bg-panel-soft py-14 text-center">
+          {mode === "live" ? (
+            <>
+              <canvas ref={championFlagRef} width={12} height={8} className="pixel-art block h-9 w-14" />
+              <p className="text-[9px] text-ink-soft">🏆 WORLD CUP FINISHED — SPAIN, CHAMPIONS</p>
+              <p className="text-[8px] text-muted">THE TOURNAMENT IS OVER. HEAD TO REPLAY TO SEE RUSH AND SAGE&apos;S FULL ON-CHAIN TRACK RECORD.</p>
+              <button type="button" onClick={() => setMode("replay")} className="arc-btn-sm bg-accent px-2.5 py-2 text-[8px] text-accent-ink">
+                ▶ GO TO REPLAY
+              </button>
+            </>
+          ) : (
+            <>
+              <span className="h-2 w-2 animate-arcblink bg-muted" />
+              <p className="text-[9px] text-ink-soft">NO RECORDED FIXTURE FOR REPLAY YET.</p>
+              <p className="text-[8px] text-muted">RECORD A FIXTURE WITH scripts/seed-replay-data.ts.</p>
+            </>
+          )}
         </div>
       ) : (
         <>

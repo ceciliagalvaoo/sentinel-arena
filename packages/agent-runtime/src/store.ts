@@ -192,14 +192,27 @@ export class SignalStore {
     return rows;
   }
 
-  /** This agent's signals for this fixture that have a commit but no grade yet — what game_finalised needs to settle. */
+  /**
+   * This agent's signals for this fixture that have a commit but no grade
+   * yet — what game_finalised needs to settle. Ordered by detection time:
+   * without it Postgres returns pending rows in whatever order its query
+   * plan picks, not chronological, which settled a real match (Spain x
+   * Argentina, 2026-07-19) with reveals landing in a visibly scattered
+   * order — a signal detected minutes before full-time graded before ones
+   * from days earlier in the pre-match window. Harmless to the on-chain
+   * proof itself (each reveal is still independently correct), but it made
+   * the dashboard's cumulative-accuracy chart, which plots by detection
+   * time, fill in out of sequence instead of building up steadily as
+   * settlement drains the queue.
+   */
   async findPendingSignalsByFixture(fixtureId: number, agentId: string): Promise<PendingSignal[]> {
     const { rows } = await this.db.query<PendingSignal>(
       `SELECT s.id, s.agent_id, s.outcome_key, s.payload_json, c.commit_tx_sig
        FROM signals s
        JOIN commits c ON c.signal_id = s.id
        LEFT JOIN grades g ON g.signal_id = s.id
-       WHERE s.fixture_id = $1 AND s.agent_id = $2 AND g.signal_id IS NULL`,
+       WHERE s.fixture_id = $1 AND s.agent_id = $2 AND g.signal_id IS NULL
+       ORDER BY s.detected_at ASC`,
       [fixtureId, agentId],
     );
     return rows;

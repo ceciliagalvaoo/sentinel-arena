@@ -5,10 +5,15 @@ import type { AgentId, SignalWithLifecycle } from "./types";
 import { fetchSignals } from "./api";
 
 const AGENT_IDS: AgentId[] = ["agent-aggressive", "agent-conservative"];
-// Comfortably above any real match's signal count (largest observed this
-// project: a few hundred per agent for a full 90+ min match) — the replay
-// showcase needs the WHOLE history, not the capped 50 the live feed uses.
-const FULL_HISTORY_LIMIT = 5000;
+// A pre-match window spanning several days before kickoff (agents track a
+// fixture from the moment TxLINE starts quoting it, not just from kickoff)
+// pushed a real match past the old 5,000 cap — agent-aggressive alone hit
+// 5,750 signals on the Spain x Argentina fixture (2026-07-19), silently
+// truncating everything detected before the cutoff, pre-match history and
+// all, out of both the replay showcase and the accuracy chart. Comfortably
+// above that observed real maximum, not the few-hundred-per-90-minutes
+// figure a match with no multi-day pre-match tracking would produce.
+const FULL_HISTORY_LIMIT = 10_000;
 
 const EMPTY: Record<AgentId, SignalWithLifecycle[]> = { "agent-aggressive": [], "agent-conservative": [] };
 
