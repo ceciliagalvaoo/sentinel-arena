@@ -77,7 +77,10 @@ function HomepageHeader() {
         </p>
 
         <div className={styles.buttons}>
-          <Link className="button button--primary button--lg" to="/judging">
+          <Link className="button button--primary button--lg" href="https://youtu.be/T40LWA3_C-k">
+            🎬 Watch the demo
+          </Link>
+          <Link className="button button--secondary button--lg" to="/judging">
             See the judging criteria →
           </Link>
           <Link className="button button--secondary button--lg" href="https://sentinel-dashboard-fq9r.onrender.com/">

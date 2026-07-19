@@ -13,10 +13,6 @@
 <p align="center">
   <a href="https://youtu.be/T40LWA3_C-k"><b>🎬 Watch the demo</b></a>
 </p>
-<p align="center">
-  <a href="https://youtu.be/T40LWA3_C-k"><img src="https://img.youtube.com/vi/T40LWA3_C-k/maxresdefault.jpg" alt="Watch the Sentinel Arena demo" width="640" /></a>
-</p>
-<p align="center"><sub>Two agents, one live feed, and a track record you can verify yourself.</sub></p>
 
 This folder is written for one purpose: to walk a judge, criterion by criterion, through **why Sentinel Arena is a real autonomous trading agent**, not a slide, not a mock, but a system that reads the market, decides, records its decision on-chain before the result exists, and grades itself, with nobody touching it after deploy.
 
