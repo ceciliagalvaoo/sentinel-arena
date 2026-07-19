@@ -16,6 +16,34 @@ type FetchInput = Parameters<typeof fetch>[0];
 type FetchInit = Parameters<typeof fetch>[1];
 
 const STREAM_IDLE_TIMEOUT_MS = 90_000;
+const CONNECT_TIMEOUT_MS = 15_000;
+
+/**
+ * `withIdleTimeout` only guards the body *after* `fetch()` has already
+ * resolved with a response — the `fetch()` call establishing that
+ * connection in the first place had no timeout of its own. That gap let
+ * `agent-conservative` wedge again on 2026-07-19: its odds stream died at
+ * the previous fixture's `game_finalised`, `ReconnectingSseClient` correctly
+ * kicked off a retry, and that retry's own `fetch()` stalled with no error
+ * and no reconnect log for the next ~17h, identical symptom to the
+ * 2026-07-15 incident but one call earlier in the chain than that fix
+ * covers. Aborting the connect attempt itself after `CONNECT_TIMEOUT_MS`
+ * guarantees a stuck reconnect surfaces as a rejected promise, which
+ * `ReconnectingSseClient`'s backoff loop already knows how to retry.
+ */
+function fetchWithConnectTimeout(input: FetchInput, init: FetchInit | undefined, timeoutMs: number): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(
+    () => controller.abort(new Error(`connect attempt timed out after ${timeoutMs}ms with no response`)),
+    timeoutMs,
+  );
+  const outerSignal = init?.signal;
+  if (outerSignal) {
+    if (outerSignal.aborted) controller.abort(outerSignal.reason);
+    else outerSignal.addEventListener("abort", () => controller.abort(outerSignal.reason), { once: true });
+  }
+  return fetch(input, { ...init, signal: controller.signal }).finally(() => clearTimeout(timer));
+}
 
 /**
  * The `eventsource` package's internal read loop is a bare
@@ -77,14 +105,18 @@ function openStream<TRaw, TNormalized>(
   const eventSource = new EventSource(url, {
     fetch: async (input: FetchInput, init?: FetchInit) => {
       const attempt = (jwt: string) =>
-        fetch(input, {
-          ...init,
-          headers: {
-            ...init?.headers,
-            Authorization: `Bearer ${jwt}`,
-            "X-Api-Token": credentials.apiToken,
+        fetchWithConnectTimeout(
+          input,
+          {
+            ...init,
+            headers: {
+              ...init?.headers,
+              Authorization: `Bearer ${jwt}`,
+              "X-Api-Token": credentials.apiToken,
+            },
           },
-        });
+          CONNECT_TIMEOUT_MS,
+        );
 
       let response = await attempt(currentJwt);
       if (response.status === 401 || response.status === 403) {
