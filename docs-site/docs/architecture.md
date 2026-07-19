@@ -89,6 +89,10 @@ class MultiFixtureAgentState {
 
 This costs nothing to decide up front and is expensive to retrofit, the same two agent processes already cover every fixture TxLINE streams simultaneously, with zero architecture changes needed to track more matches.
 
+## Design principle #3: only World Cup fixtures are tracked
+
+TxLINE's live feed carries every fixture it covers, not just the World Cup, other competitions (friendlies, etc.) arrive on the exact same odds/scores stream once the tournament's own matches aren't the only thing airing. Every fixture is checked against its competition before the agent does anything with it: `ensureFixtureRegistered` (`agent-runtime/src/loop.ts`) resolves the fixture's competition first, and a fixture confirmed non-World-Cup is never registered into `tracked_fixtures`, let alone windowed, thresholded, or committed on, no state, no signal, no SOL spent on a match outside scope. A fixture whose competition isn't known yet (lookup unavailable or still pending) is processed normally rather than blocked, the same "never let an optional enrichment stall the core pipeline" rule already governing team-name lookups. The same `competition ILIKE 'World Cup'` filter is enforced server-side too, on the fixtures list, the signal feed, and the accuracy aggregate, so no non-tournament data reaches the dashboard or a direct API caller either.
+
 ## Data model
 
 ```sql

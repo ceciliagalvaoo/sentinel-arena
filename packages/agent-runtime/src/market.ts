@@ -33,6 +33,22 @@ export function mapPriceNameToOutcomeKey(priceName: string): string | null {
   return PRICE_NAME_TO_OUTCOME_KEY[priceName] ?? null;
 }
 
+/**
+ * v1 scope is the World Cup specifically (hackathon brief). Once the
+ * tournament is over the live TxLINE feed also carries other competitions
+ * (e.g. a Vietnam x Myanmar friendly), and the agent otherwise registers
+ * odds for any soccer fixture it sees — without this filter a
+ * non-tournament match would both burn real SOL on commit/reveal
+ * transactions and grow tracked_fixtures indefinitely. Case-insensitive to
+ * match the `ILIKE 'World Cup'` filter already used server-side
+ * (apps/backend-api/src/db.ts's accuracy aggregate).
+ */
+export const TRACKED_COMPETITION = "World Cup";
+
+export function isTrackedCompetition(competition: string): boolean {
+  return competition.trim().toLowerCase() === TRACKED_COMPETITION.toLowerCase();
+}
+
 export type FinalOutcome = "participant1_win" | "participant2_win" | "draw";
 
 interface SoccerScoreTree {

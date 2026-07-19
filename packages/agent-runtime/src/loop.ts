@@ -21,6 +21,7 @@ import { monitorWalletBalance } from "./resilience.js";
 import {
   DEFAULT_MARKET_FILTER,
   determineOutcome,
+  isTrackedCompetition,
   mapPriceNameToOutcomeKey,
   matchesMarketFilter,
   type FinalOutcome,
@@ -122,8 +123,15 @@ export class AgentLoop {
   private txQueue: Promise<unknown> = Promise.resolve();
   /** Set by the wallet monitor below — gates new commits, never existing reveals in flight. */
   private paused = false;
-  /** fixtureIds already upserted into tracked_fixtures this run — see ensureFixtureRegistered(). */
-  private readonly registeredFixtures = new Set<number>();
+  /**
+   * fixtureId -> competition already resolved this run (see
+   * ensureFixtureRegistered()). `null` means either no apiClient is
+   * configured or the snapshot lookup didn't have this fixture — unknown,
+   * not confirmed non-tournament, so processing still proceeds (fail open,
+   * same "never block on an optional enrichment" reasoning as the bare-row
+   * fallback below).
+   */
+  private readonly fixtureCompetitions = new Map<number, string | null>();
 
   constructor(private readonly config: AgentLoopConfig) {
     this.marketFilter = config.marketFilter ?? DEFAULT_MARKET_FILTER;
@@ -211,9 +219,17 @@ export class AgentLoop {
    * best-effort — a failed lookup still registers a bare row so signal
    * detection is never blocked on it, matching the "never let an optional
    * enrichment block the core pipeline" pattern used for validation checks.
+   *
+   * Returns the resolved competition (or `null` if unknown) so the caller
+   * can gate on it. A fixture confirmed non-tournament is deliberately
+   * NEVER upserted into `tracked_fixtures` — this is the "don't process
+   * these games at all" cutoff, not just a display filter: no row, no
+   * window/threshold state, no commit, no SOL spent (2026-07-19, once
+   * the live feed started carrying post-World-Cup fixtures like a
+   * Vietnam x Myanmar friendly).
    */
-  private async ensureFixtureRegistered(fixtureId: number): Promise<void> {
-    if (this.registeredFixtures.has(fixtureId)) return;
+  private async ensureFixtureRegistered(fixtureId: number): Promise<string | null> {
+    if (this.fixtureCompetitions.has(fixtureId)) return this.fixtureCompetitions.get(fixtureId) ?? null;
 
     let participant1: string | null = null;
     let participant2: string | null = null;
@@ -235,13 +251,20 @@ export class AgentLoop {
       }
     }
 
+    this.fixtureCompetitions.set(fixtureId, competition);
+    if (competition !== null && !isTrackedCompetition(competition)) {
+      return competition; // confirmed non-tournament — skip the DB row entirely
+    }
+
     await this.config.store.upsertLiveFixture(fixtureId, participant1, participant2, competition, startTimeMs);
-    this.registeredFixtures.add(fixtureId);
+    return competition;
   }
 
   private async handleOdds(event: OddsEvent): Promise<void> {
     if (!matchesMarketFilter(event, this.marketFilter)) return;
-    await this.ensureFixtureRegistered(event.fixtureId);
+
+    const competition = await this.ensureFixtureRegistered(event.fixtureId);
+    if (competition !== null && !isTrackedCompetition(competition)) return; // confirmed non-tournament fixture
 
     for (const priceName of event.priceNames) {
       const outcomeKey = mapPriceNameToOutcomeKey(priceName);

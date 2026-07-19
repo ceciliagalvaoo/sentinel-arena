@@ -106,8 +106,17 @@ function mapFixture(row: TrackedFixtureDbRow): TrackedFixtureRow {
   };
 }
 
+// Scoped to World Cup fixtures only, same reasoning as getAgentAccuracy above.
+// bd54152 filtered this client-side in the dashboard, but GET /api/fixtures
+// itself was untouched, so any direct caller (not just the dashboard UI)
+// could still see non-tournament fixtures the agents registered. The agents
+// themselves no longer even create rows for confirmed non-World-Cup
+// fixtures (agent-runtime's ensureFixtureRegistered), so this is now mostly
+// a filter against pre-existing rows, not the primary guard.
 export async function listTrackedFixtures(pool: Pool): Promise<TrackedFixtureRow[]> {
-  const { rows } = await pool.query<TrackedFixtureDbRow>(`SELECT * FROM tracked_fixtures ORDER BY start_time DESC NULLS LAST`);
+  const { rows } = await pool.query<TrackedFixtureDbRow>(
+    `SELECT * FROM tracked_fixtures WHERE competition ILIKE 'World Cup' ORDER BY start_time DESC NULLS LAST`,
+  );
   return rows.map(mapFixture);
 }
 
@@ -189,6 +198,13 @@ function mapSignalFeedRow(row: SignalFeedDbRow): SignalWithLifecycle {
   return { ...signal, commit, reveal, grade };
 }
 
+// Joins tracked_fixtures (signals.fixture_id is a NOT NULL FK into it, so
+// an inner join drops nothing) and both consumers below require
+// competition ILIKE 'World Cup' unconditionally, same reasoning as
+// listTrackedFixtures/getAgentAccuracy: neither GET /api/signals nor the
+// WebSocket push (listSignalFeedUpdatedSince) should surface a
+// non-tournament fixture's signals to a direct caller, even though the
+// agents no longer generate new ones for confirmed non-World-Cup fixtures.
 const SIGNAL_FEED_SELECT = `
   SELECT
     s.id, s.agent_id, s.fixture_id, s.outcome_key, s.odds_message_id, s.odds_ts,
@@ -197,6 +213,7 @@ const SIGNAL_FEED_SELECT = `
     r.reveal_tx_sig, r.revealed_at, r.hash_verified,
     g.final_outcome, g.correct, g.scores_seq_used, g.validation_proof_checked, g.odds_proof_checked, g.graded_at
   FROM signals s
+  JOIN tracked_fixtures tf ON tf.fixture_id = s.fixture_id
   LEFT JOIN commits c ON c.signal_id = s.id
   LEFT JOIN reveals r ON r.signal_id = s.id
   LEFT JOIN grades g ON g.signal_id = s.id
@@ -210,7 +227,7 @@ export interface SignalFeedFilters {
 
 /** The "feed cronológico de eventos" from the architecture doc's dashboard spec (section 13). */
 export async function listSignalFeed(pool: Pool, filters: SignalFeedFilters = {}): Promise<SignalWithLifecycle[]> {
-  const conditions: string[] = [];
+  const conditions: string[] = [`tf.competition ILIKE 'World Cup'`];
   const params: unknown[] = [];
 
   if (filters.fixtureId !== undefined) {
@@ -222,7 +239,7 @@ export async function listSignalFeed(pool: Pool, filters: SignalFeedFilters = {}
     conditions.push(`s.agent_id = $${params.length}`);
   }
 
-  const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+  const where = `WHERE ${conditions.join(" AND ")}`;
   params.push(filters.limit ?? 200);
   const query = `${SIGNAL_FEED_SELECT} ${where} ORDER BY s.detected_at DESC LIMIT $${params.length}`;
 
@@ -233,10 +250,11 @@ export async function listSignalFeed(pool: Pool, filters: SignalFeedFilters = {}
 /** Signals whose lifecycle changed (created, committed, revealed, or graded) since `sinceIso` — powers the WebSocket push. */
 export async function listSignalFeedUpdatedSince(pool: Pool, sinceIso: string): Promise<SignalWithLifecycle[]> {
   const query = `${SIGNAL_FEED_SELECT}
-    WHERE s.detected_at > $1
+    WHERE (s.detected_at > $1
        OR c.committed_at > $1
        OR r.revealed_at > $1
-       OR g.graded_at > $1
+       OR g.graded_at > $1)
+      AND tf.competition ILIKE 'World Cup'
     ORDER BY s.detected_at ASC
     LIMIT 500`;
   const { rows } = await pool.query<SignalFeedDbRow>(query, [sinceIso]);
