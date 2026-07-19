@@ -36,11 +36,14 @@ export default function DashboardPage() {
   // The tournament is over (Spain won the final, 2026-07-19) and no further World
   // Cup fixture will ever go live again, so the old "NO LIVE MATCH RIGHT NOW."
   // empty state would sit there forever looking like the app stalled rather than
-  // like the event ended. Painted once on mount; this canvas never changes fixture.
+  // like the event ended. The canvas only mounts once mode="live" (default mode
+  // is "replay"), so the paint effect must re-run on mode changes too — an
+  // empty deps array fired once against a still-unmounted (null) ref and never
+  // painted anything if the visitor never started out on the Live tab.
   const championFlagRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     if (championFlagRef.current) paintFlag(championFlagRef.current, flagKeyForTeam("Spain"));
-  }, []);
+  }, [mode]);
 
   // Snap the selection to a fixture valid in the current mode so the dropdown
   // and the cards below never disagree about what's selected.
@@ -172,6 +175,14 @@ export default function DashboardPage() {
               <canvas ref={championFlagRef} width={12} height={8} className="pixel-art block h-9 w-14" />
               <p className="text-[9px] text-ink-soft">🏆 WORLD CUP FINISHED — SPAIN, CHAMPIONS</p>
               <p className="text-[8px] text-muted">THE TOURNAMENT IS OVER. HEAD TO REPLAY TO SEE RUSH AND SAGE&apos;S FULL ON-CHAIN TRACK RECORD.</p>
+              <p className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[8px]">
+                <span className="text-rush">
+                  RUSH {(aggressiveCard.accuracy.accuracy * 100).toFixed(1)}% ({aggressiveCard.accuracy.correctSignals}/{aggressiveCard.accuracy.totalGradedSignals})
+                </span>
+                <span className="text-sage">
+                  SAGE {(conservativeCard.accuracy.accuracy * 100).toFixed(1)}% ({conservativeCard.accuracy.correctSignals}/{conservativeCard.accuracy.totalGradedSignals})
+                </span>
+              </p>
               <button type="button" onClick={() => setMode("replay")} className="arc-btn-sm bg-accent px-2.5 py-2 text-[8px] text-accent-ink">
                 ▶ GO TO REPLAY
               </button>
