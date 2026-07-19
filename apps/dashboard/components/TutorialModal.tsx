@@ -104,7 +104,16 @@ export function TutorialModal({ open, onClose }: TutorialModalProps) {
         </div>
 
         <div className="flex flex-col gap-2.5 border-2 border-arcborder p-3.5">
-          <div className="text-[9px] text-ink">3UP · THE ACCURACY BAR AND THE GREEN BADGE</div>
+          <div className="text-[9px] text-ink">3UP · WHY THE % LOOKS LOW</div>
+          <div className="text-[8px] leading-loose text-ink-soft">
+            EACH AGENT BETS ON 3 OUTCOMES PER MATCH AT ONCE — TEAM 1 WIN, DRAW, TEAM 2 WIN — WHICHEVER ONE&apos;S ODDS MOVE
+            SHARPLY. ONLY 1 CAN BE TRUE AT FULL-TIME, SO EVEN A SHARP AGENT ENDS UP WITH SOME WRONG BETS BY DESIGN. RANDOM
+            CHANCE ALONE SITS NEAR 33%, NOT 50% — A LOW NUMBER HERE ISN&apos;T THE AGENT MISREADING THE MARKET.
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2.5 border-2 border-arcborder p-3.5">
+          <div className="text-[9px] text-ink">4UP · THE ACCURACY BAR AND THE GREEN BADGE</div>
           <div className="text-[8px] leading-loose text-ink-soft">
             THE BIG PERCENTAGE IS CORRECT ÷ GRADED. <span className="text-good">✓ VERIFIED ON-CHAIN</span> ONLY LIGHTS UP ONCE
             EVERY GRADED SIGNAL IS DOUBLE-CHECKED AGAINST TXLINE&apos;S OWN ON-CHAIN PROOF — OTHERWISE YOU SEE{" "}
